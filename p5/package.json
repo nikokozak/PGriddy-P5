@@ -4,19 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "webpack serve --open",
-    "build": "webpack"
+    "dev": "parcel src/index.html",
+    "build": "parcel build src/index.html",
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/p5": "^0.9.1",
     "p5": "^1.3.1",
+    "parcel-bundler": "^1.12.5",
     "ts-loader": "^9.1.2",
-    "typescript": "^4.2.4",
-    "webpack": "^5.36.2",
-    "webpack-cli": "^4.7.0",
-    "webpack-dev-server": "^3.11.2"
+    "typescript": "^4.2.4"
   }
 }
