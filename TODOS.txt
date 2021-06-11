@@ -1,0 +1,17 @@
+TODOS:
+
+- Build in inverse modes into newer applicators.
+- Refactor Data-Types into more OOP-like paradigm.
+- Create new Data-Type for ArrayList<Grid_Point> (Point_Array)
+- Set up documentation system.
+
+Features:
+
+- Incorporate Color into Point Datatype.
+- Incorporate base-position and displace-position into Points.
+- Add in text support.
+- Image applicator should have position parameter (or move parameter somehow).
+- Re-do gradient algos (distance based).
+- Attractor system.
+- Add in 3D support.
+- Add in gravity / perlin oscilation.
