@@ -28812,14 +28812,443 @@ var global = arguments[3];
     }]
   }, {}, [245])(245);
 });
-},{}],"index.js":[function(require,module,exports) {
+},{}],"pgriddy/point.js":[function(require,module,exports) {
 "use strict";
 
-var p5 = _interopRequireWildcard(require("p5"));
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
 
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+/*
+  The POINT class.
+
+  A point is the basic data structure in PGriddy,
+  containing information on:
+
+  X - position (cartesian)
+  Y - position (cartesian)
+  Weight - weight to help with transformations
+*/
+var Point = function Point(x, y) {
+  var weight = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 1;
+
+  _classCallCheck(this, Point);
+
+  this.x = x;
+  this.y = y;
+  this.weight = weight;
+};
+
+exports.default = Point;
+},{}],"pgriddy/grid_point.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _point = _interopRequireDefault(require("./point"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+/*
+  The GRID POINT class.
+
+  GRID POINT is a data structure
+  a GRID POINT represents a POINT acquired from a (belonging to) a GRID
+  X -> window coordinate X of point.
+  Y -> window coordinate Y of point.
+  gridIndexX -> if created as part of a POINT_GRID, COL index of said POINT_GRID
+  gridIndexY -> if created as part of a POINT_GRID, ROW index of said POINT_GRID
+  weight -> associated weight of point.
+*/
+var GridPoint = /*#__PURE__*/function (_Point) {
+  _inherits(GridPoint, _Point);
+
+  var _super = _createSuper(GridPoint);
+
+  function GridPoint(x, y, gridIndexX, gridIndexY) {
+    var _this;
+
+    var weight = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 1;
+
+    _classCallCheck(this, GridPoint);
+
+    _this = _super.call(this, x, y, weight);
+    _this.iX = gridIndexX;
+    _this.iY = gridIndexY;
+    return _this;
+  }
+
+  return GridPoint;
+}(_point.default);
+
+exports.default = GridPoint;
+},{"./point":"pgriddy/point.js"}],"pgriddy/utilities.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.arraySelector = arraySelector;
+
+function arraySelector(column, row, matrixWidth, array) {
+  return array[row * matrixWidth + column];
+}
+
+;
+},{}],"pgriddy/point_grid.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _grid_point = _interopRequireDefault(require("./grid_point"));
+
+var _utilities = require("./utilities");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+/*
+  The POINT GRID class.
+
+  a POINT_GRID is a data structure
+
+  a POINT_GRID contains a 2D collection of POINTs
+
+  x -> Number of POINTs in X axis (INT)
+  y -> Number of POINTs in Y axis (INT)
+  c -> Global center of GRID (POINT)
+  sX -> Spacing between POINTs in X axis (INT)
+  sY -> Spacing between POINTs in Y axis (INT)
+*/
+var PointGrid = /*#__PURE__*/function () {
+  function PointGrid(numberX, numberY, centerPoint, spacingX, spacingY) {
+    _classCallCheck(this, PointGrid);
+
+    this.numX = numberX;
+    this.numY = numberY;
+    this.center = centerPoint;
+    this.sX = spacingX;
+    this.sY = spacingY;
+    this.xOrigin = centerPoint.x - numberX / 2 * spacingX;
+    this.yOrigin = centerPoint.y - numberY / 2 * spacingY;
+    this.points = [];
+    populateDefaultPoints(this);
+  }
+  /************************************************/
+
+  /******************* GETTERS ********************/
+
+  /************************************************/
+
+
+  _createClass(PointGrid, [{
+    key: "getPoint",
+    value: function getPoint(column, row) {
+      // Fetches a GridPoint from a PointGrid.
+      // column -> column of the desired point.
+      // row -> row of the desired point.
+      column = Math.min(column, this.numX);
+      row = Math.min(row, this.numY);
+      return (0, _utilities.arraySelector)(column, row, this.numX, this.points);
+    }
+  }, {
+    key: "getPointSafe",
+    value: function getPointSafe(column, row) {
+      // Fetches a GridPoint from a PointGrid,
+      // throwing an Error if the input parameters are
+      // out of bounds.
+      // column -> column of the desired point.
+      // row -> row of the desired point.
+      if (column > this.numX - 1 || row > this.numY - 1 || column < 0 || row < 0) {
+        throw "UNSAFE_POINT";
+      } else {
+        return (0, _utilities.arraySelector)(column, row, this.numX, this.points);
+      }
+    }
+  }, {
+    key: "getColumnByIndex",
+    value: function getColumnByIndex(index) {
+      // Fetches a column of GridPoints from a PointGrid
+      // index -> the index of the desired column.
+      var result = [];
+
+      for (var i = 0; i < this.numY; i++) {
+        result.push((0, _utilities.arraySelector)(index, i, this.numX, this.points));
+      }
+    }
+  }, {
+    key: "getRowByIndex",
+    value: function getRowByIndex(index) {
+      // Fetches a row of GridPoints from a PointGrid
+      // index -> the index of the desired row.
+      var result = [];
+
+      for (var i = 0; i < this.numX; i++) {
+        result.push((0, _utilities.arraySelector)(i, index, this.numX, this.points));
+      }
+    }
+  }, {
+    key: "getOppositePoint",
+    value: function getOppositePoint(column, row) {
+      // Fetches a vertically and horizontally symmetrical GridPoint based on a source GridPoint (defined by a column and a row coordinate).
+      // column -> column index of source point
+      // row -> row index of source point
+      var gridWidth = this.numX - 1;
+      var gridHeight = this.numY - 1;
+      var oppositeX = gridWidth - column;
+      var oppositeY = gridHeight - row;
+      return this.getPoint(oppositeX, oppositeY);
+    }
+  }, {
+    key: "getOppositePointVert",
+    value: function getOppositePointVert(column, row) {
+      // Fetches a vertically symmetrical POINT based on a source POINT and POINT_GRID
+      // Where:
+      // column -> column index of source point
+      // row -> row index of source point
+      var gridHeight = this.numY - 1;
+      var oppositeY = gridHeight - row;
+      return this.getPoint(column, oppositeY);
+    }
+  }, {
+    key: "getOppositePointHor",
+    value: function getOppositePointHor(column, row) {
+      // Fetches a horizontally symmetrical POINT based on a source POINT and POINT_GRID
+      // Where:
+      // _col -> column index of source point
+      // _row -> row index of source point
+      var gridWidth = this.numX - 1;
+      var oppositeX = gridWidth - column;
+      return this.getPoint(oppositeX, row);
+    }
+  }, {
+    key: "getLine",
+    value: function getLine(columnStart, rowStart, columnEnd, rowEnd) {
+      // fetches points on grid according to line given by (columnStart, rowStart), (columnEnd, rowEnd)
+      // uses modified rasterizing algorithm by Alois Zingl (http://members.chello.at/~easyfilter/Bresenham.pdf)
+      // Where:
+      // columnStart, rowStart -> start point of line (by col and row index of POINT_GRID)
+      // columnEnd, rowEnd -> end point of line (by col and row index of POINT_GRID)
+      var result = [];
+      var dx = Math.abs(columnEnd - columnStart);
+      var dy = Math.abs(rowEnd - rowStart) * -1;
+      var sx = columnStart < columnEnd ? 1 : -1;
+      var sy = rowStart < rowEnd ? 1 : -1;
+      var err = dx + dy;
+      var e2;
+
+      while (true) {
+        if (this.checkBounds(columnStart, rowStart, columnEnd, rowEnd)) {
+          result.push(this.getPoint(columnStart, rowStart));
+        }
+
+        e2 = err * 2;
+
+        if (e2 >= dy) {
+          if (columnStart == columnEnd) ;
+          err += dy;
+          columnStart += sx;
+        }
+
+        if (e2 <= dx) {
+          if (rowStart == rowEnd) break;
+          err += dx;
+          rowStart += sy;
+        }
+      }
+
+      return result;
+    }
+  }, {
+    key: "getLineNotOpped",
+    value: function getLineNotOpped(columnStart, rowStart, columnEnd, rowEnd) {
+      // fetches points on grid according to line given by (columnStart, rowStart), (columnEnd, rowEnd)
+      // instead of an optimized algorithm, uses a non-optimized slope-intercept based method.
+      // Where:
+      // columnStart, rowStart -> start point of line (by col and row index of POINT_GRID)
+      // columnEnd, rowEnd -> end point of line (by col and row index of POINT_GRID)
+      var result = [];
+      var dir = columnStart < columnEnd;
+      var startX = dir ? columnStart : columnEnd;
+      var startY = dir ? rowStart : rowEnd;
+      var endX = dir ? columnEnd : columnStart;
+      var endY = dir ? rowEnd : rowStart;
+      var slope = (endY - startY) / (endX - startX);
+      var offset = startY - slope * startX;
+      var y;
+
+      while (startX++ != endX) {
+        y = slope * startX + offset;
+        result.push(this.getPoint(startX, y));
+      }
+
+      return result;
+    }
+  }, {
+    key: "getCircle",
+    value: function getCircle(column, row, radius) {
+      // fetches points on grid according to circle with center (column, row) and radius (radius)
+      // uses modified rasterizing algorithm by Alois Zingl (http://members.chello.at/~easyfilter/Bresenham.pdf)
+      // Where:
+      // column, row -> center of circle
+      // radius -> radius of circle
+      var result = [];
+      var x = -radius;
+      var y = 0;
+      var err = 2 - 2 * radius;
+
+      while (x < 0) {
+        if (column - x < this.numX && column - x > -1 && row + y < this.numY && row + y > -1) {
+          // Same as with line (out of bounds checks).
+          result.push(this.getPoint(column - x, row + y));
+        }
+
+        if (column - y > -1 && column - y < this.numX && row - x < this.numY && row - x > -1) {
+          result.push(this.getPoint(column - y, row - x));
+        }
+
+        if (column + x > -1 && column + x < this.numX && row - y > -1 && row - y < this.numY) {
+          result.push(this.getPoint(column + x, row - y));
+        }
+
+        if (column + y < this.numX && column + y > -1 && row + x > -1 && row + x < this.numY) {
+          result.push(this.getPoint(column + y, row + x));
+        }
+
+        radius = err;
+
+        if (radius <= y) {
+          y += 1;
+          err += y * 2 + 1;
+        }
+
+        if (radius > x || err > y) {
+          x += 1;
+          err += x * 2 + 1;
+        }
+      }
+
+      return this.points;
+    }
+  }, {
+    key: "getPattern",
+    value: function getPattern(column, row, directionList, repetitions) {
+      var overflow = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
+      var tempResult = new Set(); // Consider just checking ArrayList for duplicates
+
+      var currentPoint = Object.assign({}, this.getPoint(column, row));
+      var step = 0;
+      var pointer = 0;
+      var mod = directionList.size();
+
+      while (step < repetitions) {
+        if (tempResult.contains(currentPoint) || currentPoint == null) break;
+        tempResult.push(Object.assign({}, currentPoint)); //new Grid_Point(currentPoint));
+
+        pointer = step % mod; //print(directionList.get(pointer));
+
+        switch (directionList[pointer]) {
+          case 0:
+            currentPoint = overflow ? this.getPoint(currentPoint.iX, currentPoint.iY - 1) : this.getPointSafe(currentPoint.iX, currentPoint.iY - 1);
+            break;
+
+          case 1:
+            currentPoint = overflow ? this.getPoint(currentPoint.iX + 1, currentPoint.iY - 1) : this.getPointSafe(currentPoint.iX + 1, currentPoint.iY - 1);
+            break;
+
+          case 2:
+            currentPoint = overflow ? this.getPoint(currentPoint.iX + 1, currentPoint.iY) : this.getPointSafe(currentPoint.iX + 1, currentPoint.iY);
+            break;
+
+          case 3:
+            currentPoint = overflow ? this.getPoint(currentPoint.iX + 1, currentPoint.iY + 1) : this.getPointSafe(currentPoint.iX + 1, currentPoint.iY + 1);
+            break;
+
+          case 4:
+            currentPoint = overflow ? this.getPoint(currentPoint.iX, currentPoint.iY + 1) : this.getPointSafe(currentPoint.iX, currentPoint.iY + 1);
+            break;
+
+          case 5:
+            currentPoint = overflow ? this.getPoint(currentPoint.iX - 1, currentPoint.iY + 1) : this.getPointSafe(currentPoint.iX - 1, currentPoint.iY + 1);
+            break;
+
+          case 6:
+            currentPoint = overflow ? this.getPoint(currentPoint.iX - 1, currentPoint.iY) : this.getPointSafe(currentPoint.iX - 1, currentPoint.iY);
+            break;
+
+          case 7:
+            currentPoint = overflow ? this.getPoint(currentPoint.iX - 1, currentPoint.iY - 1) : this.getPointSafe(currentPoint.iX - 1, currentPoint.iY - 1);
+            break;
+        }
+
+        step += 1;
+      }
+
+      return Array.from(tempResult);
+    }
+  }]);
+
+  return PointGrid;
+}();
+
+exports.default = PointGrid;
+
+function populateDefaultPoints(pointGrid) {
+  // Populates the 'pointGrid.points' field
+  // in a column-first flat array fashion.
+  var xPos, yPos;
+
+  for (var i = 0; i < pointGrid.numX; i++) {
+    xPos = pointGrid.xOrigin + i * pointGrid.sX;
+
+    for (var j = 0; j < pointGrid.numY; j++) {
+      yPos = pointGrid.yOrigin + j * pointGrid.sY;
+      pointGrid.points.push(new _grid_point.default(xPos, yPos, i, j));
+    }
+  }
+}
+},{"./grid_point":"pgriddy/grid_point.js","./utilities":"pgriddy/utilities.js"}],"index.js":[function(require,module,exports) {
+"use strict";
+
+var _point_grid = _interopRequireDefault(require("./pgriddy/point_grid"));
+
+var _point = _interopRequireDefault(require("./pgriddy/point"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var p5 = require('p5');
 
 // -------------- SETUP ---------------- //
 var size = {
@@ -28828,6 +29257,10 @@ var size = {
 };
 
 var sketch = function sketch(p) {
+  var gridCenter = new _point.default(size.width / 2, size.height / 2);
+  var grid = new _point_grid.default(20, 20, gridCenter, 10, 10);
+  console.log(grid);
+
   p.setup = function () {
     p.createCanvas(size.width, size.height);
   };
@@ -28841,7 +29274,7 @@ var sketch = function sketch(p) {
 
 var container = document.getElementById('p5');
 var instance = new p5(sketch, container);
-},{"p5":"../node_modules/p5/lib/p5.min.js"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"p5":"../node_modules/p5/lib/p5.min.js","./pgriddy/point_grid":"pgriddy/point_grid.js","./pgriddy/point":"pgriddy/point.js"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -28869,7 +29302,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51883" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54341" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

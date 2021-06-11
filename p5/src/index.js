@@ -1,4 +1,6 @@
-import * as p5 from 'p5'
+const p5 = require('p5');
+import PointGrid from './pgriddy/point_grid';
+import Point from './pgriddy/point';
 
 // -------------- SETUP ---------------- //
 
@@ -8,6 +10,12 @@ const size = {
 }
 
 const sketch = (p) => {
+
+  let gridCenter = new Point(size.width / 2, size.height / 2);
+  let grid = new PointGrid(20, 20, gridCenter, 10, 10);
+
+  console.log(grid);
+
 	p.setup = () => {
 		p.createCanvas(size.width, size.height);
 	}

@@ -1,5 +1,5 @@
-import GridPoint from './grid_point'
-import { arraySelector } from './utilities'
+import GridPoint from './grid_point';
+import { arraySelector } from './utilities';
 
 /*
   The POINT GRID class.
@@ -15,7 +15,7 @@ import { arraySelector } from './utilities'
   sY -> Spacing between POINTs in Y axis (INT)
 */
 
-export default class PointGrid 
+export default class PointGrid
 {
 
   constructor(numberX, numberY, centerPoint, spacingX, spacingY)
@@ -37,28 +37,28 @@ export default class PointGrid
   /******************* GETTERS ********************/
   /************************************************/
 
-  getPoint(column, row) 
+  getPoint(column, row)
   {
     // Fetches a GridPoint from a PointGrid.
     // column -> column of the desired point.
     // row -> row of the desired point.
     column = Math.min(column, this.numX);
     row = Math.min(row, this.numY);
-    
+
     return arraySelector(column, row, this.numX, this.points);
   }
 
-  getPointSafe(column, row) 
+  getPointSafe(column, row)
   {
     // Fetches a GridPoint from a PointGrid,
     // throwing an Error if the input parameters are
     // out of bounds.
     // column -> column of the desired point.
     // row -> row of the desired point.
-    if (column > this.numX - 1 
-      || row > this.numY - 1 
-      || column < 0 
-      || row < 0) 
+    if (column > this.numX - 1
+      || row > this.numY - 1
+      || column < 0
+      || row < 0)
     {
       throw("UNSAFE_POINT");
     } else {
@@ -66,7 +66,7 @@ export default class PointGrid
     }
   }
 
-  getColumnByIndex(index) 
+  getColumnByIndex(index)
   {
     // Fetches a column of GridPoints from a PointGrid
     // index -> the index of the desired column.
@@ -164,7 +164,7 @@ export default class PointGrid
     // columnStart, rowStart -> start point of line (by col and row index of POINT_GRID)
     // columnEnd, rowEnd -> end point of line (by col and row index of POINT_GRID)
     let result = [];
-    
+
     let dir = columnStart < columnEnd;
     let startX = dir ? columnStart : columnEnd;
     let startY = dir ? rowStart : rowEnd;
@@ -183,7 +183,7 @@ export default class PointGrid
 
   }
 
-  
+
   getCircle(column, row, radius)
   {
     // fetches points on grid according to circle with center (column, row) and radius (radius)
@@ -192,11 +192,11 @@ export default class PointGrid
     // column, row -> center of circle
     // radius -> radius of circle
     let result = [];
-  
+
     let x = -radius;
     let y = 0;
     let err = 2-2*radius;
-    
+
     while (x < 0) {
       if (column - x < this.numX && column - x > -1 && row + y < this.numY && row + y > -1) { // Same as with line (out of bounds checks).
         result.push(this.getPoint(column - x, row + y));
@@ -220,27 +220,27 @@ export default class PointGrid
         err += x*2+1;
       }
     }
-  
+
     return this.points;
   }
 
   getPattern(column, row, directionList, repetitions, overflow = false) {
-    
+
     let tempResult = new Set(); // Consider just checking ArrayList for duplicates
-   
+
     let currentPoint = Object.assign({}, this.getPoint(column, row));
     let step = 0;
     let pointer = 0;
     let mod = directionList.size();
-    
+
     while (step < repetitions) {
       if (tempResult.contains(currentPoint) || currentPoint == null) break;
       tempResult.push(Object.assign({}, currentPoint));
       //new Grid_Point(currentPoint));
-      
+
       pointer = step % mod;
       //print(directionList.get(pointer));
-      
+
       switch(directionList[pointer]) {
         case 0:
           currentPoint = overflow ? this.getPoint(currentPoint.iX, currentPoint.iY - 1) : this.getPointSafe(currentPoint.iX, currentPoint.iY - 1);
@@ -267,11 +267,11 @@ export default class PointGrid
           currentPoint = overflow ? this.getPoint(currentPoint.iX - 1, currentPoint.iY - 1) : this.getPointSafe(currentPoint.iX - 1, currentPoint.iY - 1);
           break;
       }
-      
+
       step += 1;
-      
+
     }
-    
+
     return Array.from(tempResult);
   }
 
