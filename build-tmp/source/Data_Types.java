@@ -440,6 +440,7 @@ public Point_Grid applyLinRadGradient(int _col, int _row, int _rad, double _init
       if (_col-x < _pg.x && _col-x > -1 && _row+y < _pg.y && _row+y > -1) { 
         grid_result.points.get(_col-x).get(_row+y).weight = curr_weight;
       }
+  /************************************************/
       if (_col-y > -1 && _col-y < _pg.x && _row-x < _pg.y && _row-x > -1) {
         grid_result.points.get(_col-y).get(_row-x).weight = curr_weight;
       }

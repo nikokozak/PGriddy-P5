@@ -224,46 +224,47 @@ export default class PointGrid
     return this.points;
   }
 
-  getPattern(_col, _row, _dlist, _reps, _overflow) {
+  getPattern(column, row, directionList, repetitions, overflow = false) {
     
-    Set<Grid_Point> temp_result = new HashSet<Grid_Point>(); // Consider just checking ArrayList for duplicates
+    let tempResult = new Set(); // Consider just checking ArrayList for duplicates
+   
+    let currentPoint = Object.assign({}, this.getPoint(column, row));
+    let step = 0;
+    let pointer = 0;
+    let mod = directionList.size();
     
-    Grid_Point currentPoint = new Grid_Point(getPoint(_col, _row, _pg));
-    int step = 0;
-    int pointer = 0;
-    int mod = _dlist.size();
-    
-    while (step < _reps) {
-      if (temp_result.contains(currentPoint) || currentPoint == null) break;
-      temp_result.add(new Grid_Point(currentPoint));
+    while (step < repetitions) {
+      if (tempResult.contains(currentPoint) || currentPoint == null) break;
+      tempResult.push(Object.assign({}, currentPoint));
+      //new Grid_Point(currentPoint));
       
       pointer = step % mod;
-      //print(_dlist.get(pointer));
+      //print(directionList.get(pointer));
       
-      switch(_dlist.get(pointer)) {
+      switch(directionList[pointer]) {
         case 0:
-          currentPoint = _overflow ? getPoint(currentPoint.gridIndexX, currentPoint.gridIndexY - 1, _pg) : getPointSafe(currentPoint.gridIndexX, currentPoint.gridIndexY - 1, _pg);
+          currentPoint = overflow ? this.getPoint(currentPoint.iX, currentPoint.iY - 1) : this.getPointSafe(currentPoint.iX, currentPoint.iY - 1);
           break;
         case 1:
-          currentPoint = _overflow ? getPoint(currentPoint.gridIndexX + 1, currentPoint.gridIndexY - 1, _pg) : getPointSafe(currentPoint.gridIndexX + 1, currentPoint.gridIndexY - 1, _pg);
+          currentPoint = overflow ? this.getPoint(currentPoint.iX + 1, currentPoint.iY - 1) : this.getPointSafe(currentPoint.iX + 1, currentPoint.iY - 1);
           break;
         case 2:
-          currentPoint = _overflow ? getPoint(currentPoint.gridIndexX + 1, currentPoint.gridIndexY, _pg) : getPointSafe(currentPoint.gridIndexX + 1, currentPoint.gridIndexY, _pg);
+          currentPoint = overflow ? this.getPoint(currentPoint.iX + 1, currentPoint.iY) : this.getPointSafe(currentPoint.iX + 1, currentPoint.iY);
           break;
         case 3:
-          currentPoint = _overflow ? getPoint(currentPoint.gridIndexX + 1, currentPoint.gridIndexY + 1, _pg) : getPointSafe(currentPoint.gridIndexX + 1, currentPoint.gridIndexY + 1, _pg);
+          currentPoint = overflow ? this.getPoint(currentPoint.iX + 1, currentPoint.iY + 1) : this.getPointSafe(currentPoint.iX + 1, currentPoint.iY + 1);
           break;
         case 4:
-          currentPoint = _overflow ? getPoint(currentPoint.gridIndexX, currentPoint.gridIndexY + 1, _pg) : getPointSafe(currentPoint.gridIndexX, currentPoint.gridIndexY + 1, _pg);
+          currentPoint = overflow ? this.getPoint(currentPoint.iX, currentPoint.iY + 1) : this.getPointSafe(currentPoint.iX, currentPoint.iY + 1);
           break;
         case 5:
-          currentPoint = _overflow ? getPoint(currentPoint.gridIndexX - 1, currentPoint.gridIndexY + 1, _pg) : getPointSafe(currentPoint.gridIndexX - 1, currentPoint.gridIndexY + 1, _pg);
+          currentPoint = overflow ? this.getPoint(currentPoint.iX - 1, currentPoint.iY + 1) : this.getPointSafe(currentPoint.iX - 1, currentPoint.iY + 1);
           break;
         case 6:
-          currentPoint = _overflow ? getPoint(currentPoint.gridIndexX - 1, currentPoint.gridIndexY, _pg) : getPointSafe(currentPoint.gridIndexX - 1, currentPoint.gridIndexY, _pg);
+          currentPoint = overflow ? this.getPoint(currentPoint.iX - 1, currentPoint.iY) : this.getPointSafe(currentPoint.iX - 1, currentPoint.iY);
           break;
         case 7:
-          currentPoint = _overflow ? getPoint(currentPoint.gridIndexX - 1, currentPoint.gridIndexY - 1, _pg) : getPointSafe(currentPoint.gridIndexX - 1, currentPoint.gridIndexY - 1, _pg);
+          currentPoint = overflow ? this.getPoint(currentPoint.iX - 1, currentPoint.iY - 1) : this.getPointSafe(currentPoint.iX - 1, currentPoint.iY - 1);
           break;
       }
       
@@ -271,15 +272,7 @@ export default class PointGrid
       
     }
     
-    ArrayList<Grid_Point> result = new ArrayList<Grid_Point>(temp_result.size());
-    Iterator<Grid_Point> it = temp_result.iterator();
-    
-    while (it.hasNext()) {
-      result.add(it.next());
-    }
-    
-    return result;
-    
+    return Array.from(tempResult);
   }
 
 }
