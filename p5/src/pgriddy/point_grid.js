@@ -1,5 +1,5 @@
 import GridPoint from './grid_point';
-import { arraySelector } from './utilities';
+import { arraySelector, weightToRGB } from './utilities';
 
 /*
   The POINT GRID class.
@@ -224,17 +224,24 @@ export default class PointGrid
     return this.points;
   }
 
-  getPattern(column, row, directionList, repetitions, overflow = false) {
-
+  getPattern(column, row, directionList, repetitions, overflow = false)
+  {
+    // fetches points according to a list of directions (explained below) for a certain number of iterations
+    //
+    // column, row -> origin of pattern
+    // directionList -> list of steps to take, where: 0:top, 1:top-right, 2:right, 3:bottom-right, etc.
+    // repetitions -> number of steps to take (from 0, where none are taken, to ...)
+    // overflow -> allow for pattern to wrap around edges (if a similar point is found, pattern will break regardless of reps)
     let tempResult = new Set(); // Consider just checking ArrayList for duplicates
 
     let currentPoint = Object.assign({}, this.getPoint(column, row));
     let step = 0;
     let pointer = 0;
-    let mod = directionList.size();
+    let mod = directionList.length;
 
     while (step < repetitions) {
       if (tempResult.contains(currentPoint) || currentPoint == null) break;
+
       tempResult.push(Object.assign({}, currentPoint));
       //new Grid_Point(currentPoint));
 
@@ -275,6 +282,117 @@ export default class PointGrid
     return Array.from(tempResult);
   }
 
+  getPerlin(low, high)
+  {
+    // Returns a selection of points based on an application of perlin noise
+    // weights onto GridPoints in a given PointGrid, and a threshold to select from
+    // low: bottom cutoff for weight
+    // high: top cutoff for weight
+    let modGrid = PointGrid.clone(this);
+
+    modGrid.applyPerlin(0, 1, 0, false);
+
+    return PointGrid.getThreshold(low, high, modGrid);
+  }
+
+  getRandom(low, high)
+  {
+    // Returns a selection of points based on a random application of
+    // weights onto GridPoints in a given PointGrid, and a threshold to select from
+    // Where:
+    // low: bottom cutoff for weight
+    // high: top cutoff for weight
+    let modGrid = PointGrid.clone(this);
+
+    modGrid.applyRandom(false);
+
+    return PointGrid.getThreshold(low, high, modGrid);
+  }
+
+  getThreshold(low, high)
+  {
+    return PointGrid.getThreshold(low, high, this);
+  }
+
+  static getThreshold(low, high, pointGrid)
+  {
+    // retrieves GridPoints whose weight is > low and < high.
+    // low: bottom cutoff for weight
+    // high: top cutoff for weight
+    // pointGrid: grid to sample from
+    let result = [];
+
+    for (let i = 0; i < pointGrid.points.length; i++) {
+      if (pointGrid.points[i].weight > low && pointGrid.points[i].weight < high) {
+        result.push(pointGrid.points[i]);
+      }
+    }
+
+    return result;
+  }
+
+  /************************************************/
+  /******************* DRAWING ********************/
+  /************************************************/
+
+  draw(pInstance, type = 1, displayWeight = true)
+  {
+    // Draws all points of a PointGrid pg onto the window
+    // type -> Type of Processing object to draw (INT) [1: POINT, 2: CIRCLE, 3: RECT]
+    // displayWeight -> Allow weight to dictate the fill
+    for (let i = 0; i < this.points.length; i++) {
+      if (displayWeight) {
+        const col = weightToRGB(this.points[i].weight);
+        pInstance.stroke(col);
+        pInstance.fill(col);
+      } else {
+        pInstance.stroke(255);
+        pInstance.fill(255);
+      }
+
+      switch(type) {
+      case 1:
+        pInstance.point(this.points[i].x, this.points[i].y);
+        break;
+      case 2:
+        pInstance.circle(this.points[i].x, this.points[i].y, 3);
+        break;
+      case 3:
+        pInstance.rectMode(pInstance.CENTER);
+        pInstance.rect(this.points[i].x, this.points[i].y, 5, 5);
+        break;
+      }
+    }
+  }
+
+  /************************************************/
+  /******************* UTILS **********************/
+  /************************************************/
+
+  checkBounds(columnStart, rowStart, columnEnd, rowEnd)
+  {
+    // Checks whether the given row and column values exceed the number of columns and rows in a POINT_GRID
+    // columnStart, rowStart -> initial col and row values
+    // columnEnd, rowEnd -> final col and row values
+    return this.checkRowBounds(rowStart) &&
+      this.checkRowBounds(rowEnd) &&
+      this.checkColBounds(columnStart) &&
+      this.checkColBounds(columnEnd);
+  }
+
+  checkRowBounds(row)
+  {
+    // Checks whether the given row exceeds the bounds of the given POINT_GRID
+    // row -> row value to check
+    return row >= 0 && row < this.numY;
+  }
+
+  checkColBounds(col)
+  {
+    // Checks whether the given column exceeds the bounds of the given POINT_GRID
+    // col -> col value to check
+    return col >= 0 && col < this.numX;
+  }
 }
 
 function populateDefaultPoints (pointGrid)

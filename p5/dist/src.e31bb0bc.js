@@ -28913,12 +28913,20 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.arraySelector = arraySelector;
+exports.map = map;
+exports.weightToRGB = weightToRGB;
 
 function arraySelector(column, row, matrixWidth, array) {
   return array[row * matrixWidth + column];
 }
 
-;
+function map(source, inMin, inMax, outMin, outMax) {
+  return (source - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+}
+
+function weightToRGB(weight) {
+  return map(weight, 0.0, 1.0, 0, 255);
+}
 },{}],"pgriddy/point_grid.js":[function(require,module,exports) {
 "use strict";
 
@@ -29166,12 +29174,18 @@ var PointGrid = /*#__PURE__*/function () {
     key: "getPattern",
     value: function getPattern(column, row, directionList, repetitions) {
       var overflow = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
+      // fetches points according to a list of directions (explained below) for a certain number of iterations
+      //
+      // column, row -> origin of pattern
+      // directionList -> list of steps to take, where: 0:top, 1:top-right, 2:right, 3:bottom-right, etc.
+      // repetitions -> number of steps to take (from 0, where none are taken, to ...)
+      // overflow -> allow for pattern to wrap around edges (if a similar point is found, pattern will break regardless of reps)
       var tempResult = new Set(); // Consider just checking ArrayList for duplicates
 
       var currentPoint = Object.assign({}, this.getPoint(column, row));
       var step = 0;
       var pointer = 0;
-      var mod = directionList.size();
+      var mod = directionList.length;
 
       while (step < repetitions) {
         if (tempResult.contains(currentPoint) || currentPoint == null) break;
@@ -29217,6 +29231,120 @@ var PointGrid = /*#__PURE__*/function () {
       }
 
       return Array.from(tempResult);
+    }
+  }, {
+    key: "getPerlin",
+    value: function getPerlin(low, high) {
+      // Returns a selection of points based on an application of perlin noise
+      // weights onto GridPoints in a given PointGrid, and a threshold to select from
+      // low: bottom cutoff for weight
+      // high: top cutoff for weight
+      var modGrid = PointGrid.clone(this);
+      modGrid.applyPerlin(0, 1, 0, false);
+      return PointGrid.getThreshold(low, high, modGrid);
+    }
+  }, {
+    key: "getRandom",
+    value: function getRandom(low, high) {
+      // Returns a selection of points based on a random application of
+      // weights onto GridPoints in a given PointGrid, and a threshold to select from
+      // Where:
+      // low: bottom cutoff for weight
+      // high: top cutoff for weight
+      var modGrid = PointGrid.clone(this);
+      modGrid.applyRandom(false);
+      return PointGrid.getThreshold(low, high, modGrid);
+    }
+  }, {
+    key: "getThreshold",
+    value: function getThreshold(low, high) {
+      return PointGrid.getThreshold(low, high, this);
+    }
+  }, {
+    key: "draw",
+    value:
+    /************************************************/
+
+    /******************* DRAWING ********************/
+
+    /************************************************/
+    function draw(pInstance) {
+      var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
+      var displayWeight = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+
+      // Draws all points of a PointGrid pg onto the window
+      // type -> Type of Processing object to draw (INT) [1: POINT, 2: CIRCLE, 3: RECT]
+      // displayWeight -> Allow weight to dictate the fill
+      for (var i = 0; i < this.points.length; i++) {
+        if (displayWeight) {
+          var col = (0, _utilities.weightToRGB)(this.points[i].weight);
+          pInstance.stroke(col);
+          pInstance.fill(col);
+        } else {
+          pInstance.stroke(255);
+          pInstance.fill(255);
+        }
+
+        switch (type) {
+          case 1:
+            pInstance.point(this.points[i].x, this.points[i].y);
+            break;
+
+          case 2:
+            pInstance.circle(this.points[i].x, this.points[i].y, 3);
+            break;
+
+          case 3:
+            pInstance.rectMode(pInstance.CENTER);
+            pInstance.rect(this.points[i].x, this.points[i].y, 5, 5);
+            break;
+        }
+      }
+    }
+    /************************************************/
+
+    /******************* UTILS **********************/
+
+    /************************************************/
+
+  }, {
+    key: "checkBounds",
+    value: function checkBounds(columnStart, rowStart, columnEnd, rowEnd) {
+      // Checks whether the given row and column values exceed the number of columns and rows in a POINT_GRID
+      // columnStart, rowStart -> initial col and row values
+      // columnEnd, rowEnd -> final col and row values
+      return this.checkRowBounds(rowStart) && this.checkRowBounds(rowEnd) && this.checkColBounds(columnStart) && this.checkColBounds(columnEnd);
+    }
+  }, {
+    key: "checkRowBounds",
+    value: function checkRowBounds(row) {
+      // Checks whether the given row exceeds the bounds of the given POINT_GRID
+      // row -> row value to check
+      return row >= 0 && row < this.numY;
+    }
+  }, {
+    key: "checkColBounds",
+    value: function checkColBounds(col) {
+      // Checks whether the given column exceeds the bounds of the given POINT_GRID
+      // col -> col value to check
+      return col >= 0 && col < this.numX;
+    }
+  }], [{
+    key: "getThreshold",
+    value: function getThreshold(low, high, pointGrid) {
+      // retrieves GridPoints whose weight is > low and < high.
+      // low: bottom cutoff for weight
+      // high: top cutoff for weight
+      // pointGrid: grid to sample from
+      var result = [];
+
+      for (var i = 0; i < pointGrid.points.length; i++) {
+        if (pointGrid.points[i].weight > low && pointGrid.points[i].weight < high) {
+          result.push(pointGrid.points[i]);
+        }
+      }
+
+      return result;
     }
   }]);
 
@@ -29269,6 +29397,7 @@ var sketch = function sketch(p) {
     p.background(0);
     p.fill(255);
     p.circle(10, 10, 10);
+    grid.draw(p, 2);
   };
 };
 
@@ -29302,7 +29431,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54341" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59008" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

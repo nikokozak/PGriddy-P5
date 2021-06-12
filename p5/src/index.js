@@ -24,6 +24,7 @@ const sketch = (p) => {
 		p.background(0);
 		p.fill(255);
 		p.circle(10, 10, 10);
+    grid.draw(p, 2);
 	}
 }
 
