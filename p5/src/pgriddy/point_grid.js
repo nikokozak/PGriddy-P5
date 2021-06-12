@@ -1,4 +1,5 @@
 import GridPoint from './grid_point';
+import * as get from './getters';
 import { arraySelector, weightToRGB } from './utilities';
 
 /*
@@ -31,305 +32,30 @@ export default class PointGrid
 
     this.points = [];
     populateDefaultPoints(this);
-  }
 
-  /************************************************/
-  /******************* GETTERS ********************/
-  /************************************************/
+    /************************************************/
+    /******************* GETTERS ********************/
+    /************************************************/
 
-  getPoint(column, row)
-  {
-    // Fetches a GridPoint from a PointGrid.
-    // column -> column of the desired point.
-    // row -> row of the desired point.
-    column = Math.min(column, this.numX);
-    row = Math.min(row, this.numY);
-
-    return arraySelector(column, row, this.numX, this.points);
-  }
-
-  getPointSafe(column, row)
-  {
-    // Fetches a GridPoint from a PointGrid,
-    // throwing an Error if the input parameters are
-    // out of bounds.
-    // column -> column of the desired point.
-    // row -> row of the desired point.
-    if (column > this.numX - 1
-      || row > this.numY - 1
-      || column < 0
-      || row < 0)
-    {
-      throw("UNSAFE_POINT");
-    } else {
-      return arraySelector(column, row, this.numX, this.points);
-    }
-  }
-
-  getColumnByIndex(index)
-  {
-    // Fetches a column of GridPoints from a PointGrid
-    // index -> the index of the desired column.
-    let result = [];
-    for (let i = 0; i < this.numY; i++) {
-      result.push(arraySelector(index, i, this.numX, this.points));
-    }
-  }
-
-  getRowByIndex(index)
-  {
-    // Fetches a row of GridPoints from a PointGrid
-    // index -> the index of the desired row.
-    let result = [];
-    for (let i = 0; i < this.numX; i++) {
-      result.push(arraySelector(i, index, this.numX, this.points));
-    }
-  }
-
-  getOppositePoint(column, row)
-  {
-    // Fetches a vertically and horizontally symmetrical GridPoint based on a source GridPoint (defined by a column and a row coordinate).
-    // column -> column index of source point
-    // row -> row index of source point
-    let gridWidth = this.numX - 1;
-    let gridHeight = this.numY - 1;
-    let oppositeX = gridWidth - column;
-    let oppositeY = gridHeight - row;
-
-    return this.getPoint(oppositeX, oppositeY);
-  }
-
-  getOppositePointVert(column, row)
-  {
-    // Fetches a vertically symmetrical POINT based on a source POINT and POINT_GRID
-    // Where:
-    // column -> column index of source point
-    // row -> row index of source point
-    let gridHeight = this.numY - 1;
-    let oppositeY = gridHeight - row;
-
-    return this.getPoint(column, oppositeY);
-  }
-
-  getOppositePointHor(column, row)
-  {
-    // Fetches a horizontally symmetrical POINT based on a source POINT and POINT_GRID
-    // Where:
-    // _col -> column index of source point
-    // _row -> row index of source point
-    let gridWidth = this.numX - 1;
-    let oppositeX = gridWidth - column;
-
-    return this.getPoint(oppositeX, row);
-  }
-
-  getLine(columnStart, rowStart, columnEnd, rowEnd)
-  {
-    // fetches points on grid according to line given by (columnStart, rowStart), (columnEnd, rowEnd)
-    // uses modified rasterizing algorithm by Alois Zingl (http://members.chello.at/~easyfilter/Bresenham.pdf)
-    // Where:
-    // columnStart, rowStart -> start point of line (by col and row index of POINT_GRID)
-    // columnEnd, rowEnd -> end point of line (by col and row index of POINT_GRID)
-    let result = [];
-    let dx = Math.abs(columnEnd - columnStart);
-    let dy = Math.abs(rowEnd - rowStart) * -1;
-    let sx = columnStart < columnEnd ? 1 : -1;
-    let sy = rowStart < rowEnd ? 1 : -1;
-    let err = dx + dy;
-    let e2;
-
-    while (true) {
-      if (this.checkBounds(columnStart, rowStart, columnEnd, rowEnd)) {
-        result.push(this.getPoint(columnStart, rowStart));
-      }
-      e2 = err * 2;
-      if (e2 >= dy) {
-        if (columnStart == columnEnd);
-        err += dy; columnStart += sx;
-      }
-      if (e2 <= dx) {
-        if (rowStart == rowEnd) break;
-        err += dx; rowStart += sy;
-      }
-    }
-
-    return result;
-  }
-
-  getLineNotOpped(columnStart, rowStart, columnEnd, rowEnd)
-  {
-    // fetches points on grid according to line given by (columnStart, rowStart), (columnEnd, rowEnd)
-    // instead of an optimized algorithm, uses a non-optimized slope-intercept based method.
-    // Where:
-    // columnStart, rowStart -> start point of line (by col and row index of POINT_GRID)
-    // columnEnd, rowEnd -> end point of line (by col and row index of POINT_GRID)
-    let result = [];
-
-    let dir = columnStart < columnEnd;
-    let startX = dir ? columnStart : columnEnd;
-    let startY = dir ? rowStart : rowEnd;
-    let endX = dir ? columnEnd : columnStart;
-    let endY = dir ? rowEnd : rowStart;
-    let slope = (endY - startY) / (endX - startX);
-    let offset = startY - slope*startX;
-    let y;
-
-    while (startX++ != endX) {
-      y = slope * startX + offset;
-      result.push(this.getPoint(startX, y));
-    }
-
-    return result;
+    this.getPoint = get.getPGPoint(this);
+    this.getPointSafe = get.getPGPointSafe(this);
+    this.getColumnByIndex = get.getPGColumnByIndex(this);
+    this.getRowByIndex = get.getPGRowByIndex(this);
+    this.getOppositePoint = get.getPGOppositePoint(this);
+    this.getOppositePointVert = get.getPGOppositePointVert(this);
+    this.getOppositePointHor = get.getPGOppositePointHor(this);
+    this.getLine = get.getPGLine(this);
+    this.getLineNotOpped = get.getPGLineNotOpped(this);
+    this.getCircle = get.getPGCircle(this);
+    this.getPattern = get.getPGPattern(this);
+    this.getThreshold = get.getPGThreshold(this);
+    this.getRandom = get.getPGRandom(this);
+    this.getPerlin = get.getPGPerlin(this);
 
   }
 
 
-  getCircle(column, row, radius)
-  {
-    // fetches points on grid according to circle with center (column, row) and radius (radius)
-    // uses modified rasterizing algorithm by Alois Zingl (http://members.chello.at/~easyfilter/Bresenham.pdf)
-    // Where:
-    // column, row -> center of circle
-    // radius -> radius of circle
-    let result = [];
 
-    let x = -radius;
-    let y = 0;
-    let err = 2-2*radius;
-
-    while (x < 0) {
-      if (column - x < this.numX && column - x > -1 && row + y < this.numY && row + y > -1) { // Same as with line (out of bounds checks).
-        result.push(this.getPoint(column - x, row + y));
-      }
-      if (column - y > -1 && column - y < this.numX && row - x < this.numY && row - x > -1) {
-        result.push(this.getPoint(column - y, row - x));
-      }
-      if (column + x > -1 && column + x < this.numX && row - y > -1 && row - y < this.numY) {
-        result.push(this.getPoint(column + x, row - y));
-      }
-      if (column + y < this.numX && column + y > -1 && row + x > -1 && row + x < this.numY) {
-        result.push(this.getPoint(column + y, row + x));
-      }
-      radius = err;
-      if (radius <= y) {
-        y += 1;
-        err += y*2+1;
-      }
-      if (radius > x || err > y) {
-        x += 1;
-        err += x*2+1;
-      }
-    }
-
-    return this.points;
-  }
-
-  getPattern(column, row, directionList, repetitions, overflow = false)
-  {
-    // fetches points according to a list of directions (explained below) for a certain number of iterations
-    //
-    // column, row -> origin of pattern
-    // directionList -> list of steps to take, where: 0:top, 1:top-right, 2:right, 3:bottom-right, etc.
-    // repetitions -> number of steps to take (from 0, where none are taken, to ...)
-    // overflow -> allow for pattern to wrap around edges (if a similar point is found, pattern will break regardless of reps)
-    let tempResult = new Set(); // Consider just checking ArrayList for duplicates
-
-    let currentPoint = Object.assign({}, this.getPoint(column, row));
-    let step = 0;
-    let pointer = 0;
-    let mod = directionList.length;
-
-    while (step < repetitions) {
-      if (tempResult.contains(currentPoint) || currentPoint == null) break;
-
-      tempResult.push(Object.assign({}, currentPoint));
-      //new Grid_Point(currentPoint));
-
-      pointer = step % mod;
-      //print(directionList.get(pointer));
-
-      switch(directionList[pointer]) {
-        case 0:
-          currentPoint = overflow ? this.getPoint(currentPoint.iX, currentPoint.iY - 1) : this.getPointSafe(currentPoint.iX, currentPoint.iY - 1);
-          break;
-        case 1:
-          currentPoint = overflow ? this.getPoint(currentPoint.iX + 1, currentPoint.iY - 1) : this.getPointSafe(currentPoint.iX + 1, currentPoint.iY - 1);
-          break;
-        case 2:
-          currentPoint = overflow ? this.getPoint(currentPoint.iX + 1, currentPoint.iY) : this.getPointSafe(currentPoint.iX + 1, currentPoint.iY);
-          break;
-        case 3:
-          currentPoint = overflow ? this.getPoint(currentPoint.iX + 1, currentPoint.iY + 1) : this.getPointSafe(currentPoint.iX + 1, currentPoint.iY + 1);
-          break;
-        case 4:
-          currentPoint = overflow ? this.getPoint(currentPoint.iX, currentPoint.iY + 1) : this.getPointSafe(currentPoint.iX, currentPoint.iY + 1);
-          break;
-        case 5:
-          currentPoint = overflow ? this.getPoint(currentPoint.iX - 1, currentPoint.iY + 1) : this.getPointSafe(currentPoint.iX - 1, currentPoint.iY + 1);
-          break;
-        case 6:
-          currentPoint = overflow ? this.getPoint(currentPoint.iX - 1, currentPoint.iY) : this.getPointSafe(currentPoint.iX - 1, currentPoint.iY);
-          break;
-        case 7:
-          currentPoint = overflow ? this.getPoint(currentPoint.iX - 1, currentPoint.iY - 1) : this.getPointSafe(currentPoint.iX - 1, currentPoint.iY - 1);
-          break;
-      }
-
-      step += 1;
-
-    }
-
-    return Array.from(tempResult);
-  }
-
-  getPerlin(low, high)
-  {
-    // Returns a selection of points based on an application of perlin noise
-    // weights onto GridPoints in a given PointGrid, and a threshold to select from
-    // low: bottom cutoff for weight
-    // high: top cutoff for weight
-    let modGrid = PointGrid.clone(this);
-
-    modGrid.applyPerlin(0, 1, 0, false);
-
-    return PointGrid.getThreshold(low, high, modGrid);
-  }
-
-  getRandom(low, high)
-  {
-    // Returns a selection of points based on a random application of
-    // weights onto GridPoints in a given PointGrid, and a threshold to select from
-    // Where:
-    // low: bottom cutoff for weight
-    // high: top cutoff for weight
-    let modGrid = PointGrid.clone(this);
-
-    modGrid.applyRandom(false);
-
-    return PointGrid.getThreshold(low, high, modGrid);
-  }
-
-  getThreshold(low, high)
-  {
-    return PointGrid.getThreshold(low, high, this);
-  }
-
-  static getThreshold(low, high, pointGrid)
-  {
-    // retrieves GridPoints whose weight is > low and < high.
-    // low: bottom cutoff for weight
-    // high: top cutoff for weight
-    // pointGrid: grid to sample from
-    let result = [];
-
-    for (let i = 0; i < pointGrid.points.length; i++) {
-      if (pointGrid.points[i].weight > low && pointGrid.points[i].weight < high) {
-        result.push(pointGrid.points[i]);
-      }
-    }
-
-    return result;
-  }
 
   /************************************************/
   /******************* DRAWING ********************/

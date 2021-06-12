@@ -28927,7 +28927,374 @@ function map(source, inMin, inMax, outMin, outMax) {
 function weightToRGB(weight) {
   return map(weight, 0.0, 1.0, 0, 255);
 }
-},{}],"pgriddy/point_grid.js":[function(require,module,exports) {
+},{}],"pgriddy/getters.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getThreshold = exports.getPGPerlin = exports.getPGRandom = exports.getPGThreshold = exports.getPGPattern = exports.getPGCircle = exports.getPGLineNotOpped = exports.getPGLine = exports.getPGOppositePointHor = exports.getPGOppositePointVert = exports.getPGOppositePoint = exports.getPGRowByIndex = exports.getPGColumnByIndex = exports.getPGPointSafe = exports.getPGPoint = void 0;
+
+var _utilities = require("./utilities");
+
+var _point_grid = require("./point_grid");
+
+// VARIOUS GETTER FUNCTIONS FOR CLASSES
+
+/************************************************/
+
+/************ POINTGRID GETTERS *****************/
+
+/************************************************/
+var getPGPoint = function getPGPoint(pointGrid) // Fetches a GridPoint from a PointGrid.
+// column -> column of the desired point.
+// row -> row of the desired point.
+{
+  return function (column, row) {
+    column = Math.min(column, pointGrid.numX);
+    row = Math.min(row, pointGrid.numY);
+    return (0, _utilities.arraySelector)(column, row, pointGrid.numX, pointGrid.points);
+  };
+};
+
+exports.getPGPoint = getPGPoint;
+
+var getPGPointSafe = function getPGPointSafe(pointGrid) // Fetches a GridPoint from a PointGrid,
+// throwing an Error if the input parameters are
+// out of bounds.
+// column -> column of the desired point.
+// row -> row of the desired point.
+{
+  return function (column, row) {
+    if (column > pointGrid.numX - 1 || row > pointGrid.numY - 1 || column < 0 || row < 0) {
+      throw "UNSAFE_POINT";
+    } else {
+      return (0, _utilities.arraySelector)(column, row, pointGrid.numX, pointGrid.points);
+    }
+  };
+};
+
+exports.getPGPointSafe = getPGPointSafe;
+
+var getPGColumnByIndex = function getPGColumnByIndex(pointGrid) // Fetches a column of GridPoints from a PointGrid
+// index -> the index of the desired column.
+{
+  return function (index) {
+    var result = [];
+
+    for (var i = 0; i < pointGrid.numY; i++) {
+      result.push((0, _utilities.arraySelector)(index, i, pointGrid.numX, pointGrid.points));
+    }
+
+    return result;
+  };
+};
+
+exports.getPGColumnByIndex = getPGColumnByIndex;
+
+var getPGRowByIndex = function getPGRowByIndex(pointGrid) // Fetches a row of GridPoints from a PointGrid
+// index -> the index of the desired row.
+{
+  return function (index) {
+    var result = [];
+
+    for (var i = 0; i < pointGrid.numX; i++) {
+      result.push((0, _utilities.arraySelector)(i, index, pointGrid.numX, pointGrid.points));
+    }
+
+    return result;
+  };
+};
+
+exports.getPGRowByIndex = getPGRowByIndex;
+
+var getPGOppositePoint = function getPGOppositePoint(pointGrid) // Fetches a vertically and horizontally symmetrical GridPoint based on a source GridPoint (defined by a column and a row coordinate).
+// column -> column index of source point
+// row -> row index of source point
+{
+  return function (column, row) {
+    var gridWidth = pointGrid.numX - 1;
+    var gridHeight = pointGrid.numY - 1;
+    var oppositeX = gridWidth - column;
+    var oppositeY = gridHeight - row;
+    return pointGrid.getPoint(oppositeX, oppositeY);
+  };
+};
+
+exports.getPGOppositePoint = getPGOppositePoint;
+
+var getPGOppositePointVert = function getPGOppositePointVert(pointGrid) // Fetches a vertically symmetrical POINT based on a source POINT and POINT_GRID
+// Where:
+// column -> column index of source point
+// row -> row index of source point
+{
+  return function (column, row) {
+    var gridHeight = pointGrid.numY - 1;
+    var oppositeY = gridHeight - row;
+    return pointGrid.getPoint(column, oppositeY);
+  };
+};
+
+exports.getPGOppositePointVert = getPGOppositePointVert;
+
+var getPGOppositePointHor = function getPGOppositePointHor(column, row, pointGrid) {
+  // Fetches a horizontally symmetrical POINT based on a source POINT and POINT_GRID
+  // Where:
+  // column -> column index of source point
+  // row -> row index of source point
+  return function (column, row) {
+    var gridWidth = pointGrid.numX - 1;
+    var oppositeX = gridWidth - column;
+    return pointGrid.getPoint(oppositeX, row);
+  };
+};
+
+exports.getPGOppositePointHor = getPGOppositePointHor;
+
+var getPGLine = function getPGLine(pointGrid) // fetches points on grid according to line given by (columnStart, rowStart), (columnEnd, rowEnd)
+// uses modified rasterizing algorithm by Alois Zingl (http://members.chello.at/~easyfilter/Bresenham.pdf)
+// Where:
+// columnStart, rowStart -> start point of line (by col and row index of POINT_GRID)
+// columnEnd, rowEnd -> end point of line (by col and row index of POINT_GRID)
+{
+  return function (columnStart, rowStart, columnEnd, rowEnd) {
+    var result = [];
+    var dx = Math.abs(columnEnd - columnStart);
+    var dy = Math.abs(rowEnd - rowStart) * -1;
+    var sx = columnStart < columnEnd ? 1 : -1;
+    var sy = rowStart < rowEnd ? 1 : -1;
+    var err = dx + dy;
+    var e2;
+
+    while (true) {
+      if (pointGrid.checkBounds(columnStart, rowStart, columnEnd, rowEnd)) {
+        result.push(pointGrid.getPoint(columnStart, rowStart));
+      }
+
+      e2 = err * 2;
+
+      if (e2 >= dy) {
+        if (columnStart == columnEnd) ;
+        err += dy;
+        columnStart += sx;
+      }
+
+      if (e2 <= dx) {
+        if (rowStart == rowEnd) break;
+        err += dx;
+        rowStart += sy;
+      }
+    }
+
+    return result;
+  };
+};
+
+exports.getPGLine = getPGLine;
+
+var getPGLineNotOpped = function getPGLineNotOpped(pointGrid) // fetches points on grid according to line given by (columnStart, rowStart), (columnEnd, rowEnd)
+// instead of an optimized algorithm, uses a non-optimized slope-intercept based method.
+// Where:
+// columnStart, rowStart -> start point of line (by col and row index of POINT_GRID)
+// columnEnd, rowEnd -> end point of line (by col and row index of POINT_GRID)
+{
+  return function (columnStart, rowStart, columnEnd, rowEnd) {
+    var result = [];
+    var dir = columnStart < columnEnd;
+    var startX = dir ? columnStart : columnEnd;
+    var startY = dir ? rowStart : rowEnd;
+    var endX = dir ? columnEnd : columnStart;
+    var endY = dir ? rowEnd : rowStart;
+    var slope = (endY - startY) / (endX - startX);
+    var offset = startY - slope * startX;
+    var y;
+
+    while (startX++ != endX) {
+      y = slope * startX + offset;
+      result.push(pointGrid.getPoint(startX, y));
+    }
+
+    return result;
+  };
+};
+
+exports.getPGLineNotOpped = getPGLineNotOpped;
+
+var getPGCircle = function getPGCircle(pointGrid) // fetches points on grid according to circle with center (column, row) and radius (radius)
+// uses modified rasterizing algorithm by Alois Zingl (http://members.chello.at/~easyfilter/Bresenham.pdf)
+// Where:
+// column, row -> center of circle
+// radius -> radius of circle
+{
+  return function (column, row, radius) {
+    var result = [];
+    var x = -radius;
+    var y = 0;
+    var err = 2 - 2 * radius;
+
+    while (x < 0) {
+      if (column - x < pointGrid.numX && column - x > -1 && row + y < pointGrid.numY && row + y > -1) {
+        // Same as with line (out of bounds checks).
+        result.push(pointGrid.getPoint(column - x, row + y));
+      }
+
+      if (column - y > -1 && column - y < pointGrid.numX && row - x < pointGrid.numY && row - x > -1) {
+        result.push(pointGrid.getPoint(column - y, row - x));
+      }
+
+      if (column + x > -1 && column + x < pointGrid.numX && row - y > -1 && row - y < pointGrid.numY) {
+        result.push(pointGrid.getPoint(column + x, row - y));
+      }
+
+      if (column + y < pointGrid.numX && column + y > -1 && row + x > -1 && row + x < pointGrid.numY) {
+        result.push(pointGrid.getPoint(column + y, row + x));
+      }
+
+      radius = err;
+
+      if (radius <= y) {
+        y += 1;
+        err += y * 2 + 1;
+      }
+
+      if (radius > x || err > y) {
+        x += 1;
+        err += x * 2 + 1;
+      }
+    }
+
+    return pointGrid.points;
+  };
+};
+
+exports.getPGCircle = getPGCircle;
+
+var getPGPattern = function getPGPattern(pointGrid) // fetches points according to a list of directions (explained below) for a certain number of iterations
+//
+// column, row -> origin of pattern
+// directionList -> list of steps to take, where: 0:top, 1:top-right, 2:right, 3:bottom-right, etc.
+// repetitions -> number of steps to take (from 0, where none are taken, to ...)
+// overflow -> allow for pattern to wrap around edges (if a similar point is found, pattern will break regardless of reps)
+{
+  return function (column, row, directionList, repetitions) {
+    var overflow = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
+    var tempResult = new Set(); // Consider just checking ArrayList for duplicates
+
+    var currentPoint = Object.assign({}, pointGrid.getPoint(column, row));
+    var step = 0;
+    var pointer = 0;
+    var mod = directionList.length;
+
+    while (step < repetitions) {
+      if (tempResult.contains(currentPoint) || currentPoint == null) break;
+      tempResult.push(Object.assign({}, currentPoint)); //new Grid_Point(currentPoint));
+
+      pointer = step % mod; //print(directionList.get(pointer));
+
+      switch (directionList[pointer]) {
+        case 0:
+          currentPoint = overflow ? pointGrid.getPoint(currentPoint.iX, currentPoint.iY - 1) : pointGrid.getPointSafe(currentPoint.iX, currentPoint.iY - 1);
+          break;
+
+        case 1:
+          currentPoint = overflow ? pointGrid.getPoint(currentPoint.iX + 1, currentPoint.iY - 1) : pointGrid.getPointSafe(currentPoint.iX + 1, currentPoint.iY - 1);
+          break;
+
+        case 2:
+          currentPoint = overflow ? pointGrid.getPoint(currentPoint.iX + 1, currentPoint.iY) : pointGrid.getPointSafe(currentPoint.iX + 1, currentPoint.iY);
+          break;
+
+        case 3:
+          currentPoint = overflow ? pointGrid.getPoint(currentPoint.iX + 1, currentPoint.iY + 1) : pointGrid.getPointSafe(currentPoint.iX + 1, currentPoint.iY + 1);
+          break;
+
+        case 4:
+          currentPoint = overflow ? pointGrid.getPoint(currentPoint.iX, currentPoint.iY + 1) : pointGrid.getPointSafe(currentPoint.iX, currentPoint.iY + 1);
+          break;
+
+        case 5:
+          currentPoint = overflow ? pointGrid.getPoint(currentPoint.iX - 1, currentPoint.iY + 1) : pointGrid.getPointSafe(currentPoint.iX - 1, currentPoint.iY + 1);
+          break;
+
+        case 6:
+          currentPoint = overflow ? pointGrid.getPoint(currentPoint.iX - 1, currentPoint.iY) : pointGrid.getPointSafe(currentPoint.iX - 1, currentPoint.iY);
+          break;
+
+        case 7:
+          currentPoint = overflow ? pointGrid.getPoint(currentPoint.iX - 1, currentPoint.iY - 1) : pointGrid.getPointSafe(currentPoint.iX - 1, currentPoint.iY - 1);
+          break;
+      }
+
+      step += 1;
+    }
+
+    return Array.from(tempResult);
+  };
+};
+
+exports.getPGPattern = getPGPattern;
+
+var getPGThreshold = function getPGThreshold(pointGrid) // retrieves GridPoints whose weight is > low and < high.
+// low: bottom cutoff for weight
+// high: top cutoff for weight
+// pointGrid: grid to sample from
+{
+  return function (low, high) {
+    return getThreshold(low, high, pointGrid.points);
+  };
+};
+
+exports.getPGThreshold = getPGThreshold;
+
+var getPGRandom = function getPGRandom(pointGrid) // Returns a selection of points based on a random application of
+// weights onto GridPoints in a given PointGrid, and a threshold to select from
+// Where:
+// low: bottom cutoff for weight
+// high: top cutoff for weight
+{
+  return function (low, high) {
+    var modGrid = _point_grid.PointGrid.clone(pointGrid);
+
+    modGrid.applyRandom(false);
+    return modGrid.getThreshold(low, high);
+  };
+};
+
+exports.getPGRandom = getPGRandom;
+
+var getPGPerlin = function getPGPerlin(pointGrid) // Returns a selection of points based on an application of perlin noise
+// weights onto GridPoints in a given PointGrid, and a threshold to select from
+// low: bottom cutoff for weight
+// high: top cutoff for weight
+{
+  return function (low, high) {
+    var modGrid = _point_grid.PointGrid.clone(pointGrid);
+
+    modGrid.applyPerlin(0, 1, 0, false);
+    return modGrid.getThreshold(low, high);
+  };
+};
+
+exports.getPGPerlin = getPGPerlin;
+
+var getThreshold = function getThreshold(low, high, pointArray) // retrieves GridPoints whose weight is > low and < high.
+// low: bottom cutoff for weight
+// high: top cutoff for weight
+// pointGrid: grid to sample from
+{
+  var result = [];
+
+  for (var i = 0; i < pointArray.length; i++) {
+    if (pointArray[i].weight > low && pointArray[i].weight < high) {
+      result.push(pointArray[i]);
+    }
+  }
+
+  return result;
+};
+
+exports.getThreshold = getThreshold;
+},{"./utilities":"pgriddy/utilities.js","./point_grid":"pgriddy/point_grid.js"}],"pgriddy/point_grid.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -28937,7 +29304,13 @@ exports.default = void 0;
 
 var _grid_point = _interopRequireDefault(require("./grid_point"));
 
+var get = _interopRequireWildcard(require("./getters"));
+
 var _utilities = require("./utilities");
+
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -28973,302 +29346,37 @@ var PointGrid = /*#__PURE__*/function () {
     this.yOrigin = centerPoint.y - numberY / 2 * spacingY;
     this.points = [];
     populateDefaultPoints(this);
+    /************************************************/
+
+    /******************* GETTERS ********************/
+
+    /************************************************/
+
+    this.getPoint = get.getPGPoint(this);
+    this.getPointSafe = get.getPGPointSafe(this);
+    this.getColumnByIndex = get.getPGColumnByIndex(this);
+    this.getRowByIndex = get.getPGRowByIndex(this);
+    this.getOppositePoint = get.getPGOppositePoint(this);
+    this.getOppositePointVert = get.getPGOppositePointVert(this);
+    this.getOppositePointHor = get.getPGOppositePointHor(this);
+    this.getLine = get.getPGLine(this);
+    this.getLineNotOpped = get.getPGLineNotOpped(this);
+    this.getCircle = get.getPGCircle(this);
+    this.getPattern = get.getPGPattern(this);
+    this.getThreshold = get.getPGThreshold(this);
+    this.getRandom = get.getPGRandom(this);
+    this.getPerlin = get.getPGPerlin(this);
   }
   /************************************************/
 
-  /******************* GETTERS ********************/
+  /******************* DRAWING ********************/
 
   /************************************************/
 
 
   _createClass(PointGrid, [{
-    key: "getPoint",
-    value: function getPoint(column, row) {
-      // Fetches a GridPoint from a PointGrid.
-      // column -> column of the desired point.
-      // row -> row of the desired point.
-      column = Math.min(column, this.numX);
-      row = Math.min(row, this.numY);
-      return (0, _utilities.arraySelector)(column, row, this.numX, this.points);
-    }
-  }, {
-    key: "getPointSafe",
-    value: function getPointSafe(column, row) {
-      // Fetches a GridPoint from a PointGrid,
-      // throwing an Error if the input parameters are
-      // out of bounds.
-      // column -> column of the desired point.
-      // row -> row of the desired point.
-      if (column > this.numX - 1 || row > this.numY - 1 || column < 0 || row < 0) {
-        throw "UNSAFE_POINT";
-      } else {
-        return (0, _utilities.arraySelector)(column, row, this.numX, this.points);
-      }
-    }
-  }, {
-    key: "getColumnByIndex",
-    value: function getColumnByIndex(index) {
-      // Fetches a column of GridPoints from a PointGrid
-      // index -> the index of the desired column.
-      var result = [];
-
-      for (var i = 0; i < this.numY; i++) {
-        result.push((0, _utilities.arraySelector)(index, i, this.numX, this.points));
-      }
-    }
-  }, {
-    key: "getRowByIndex",
-    value: function getRowByIndex(index) {
-      // Fetches a row of GridPoints from a PointGrid
-      // index -> the index of the desired row.
-      var result = [];
-
-      for (var i = 0; i < this.numX; i++) {
-        result.push((0, _utilities.arraySelector)(i, index, this.numX, this.points));
-      }
-    }
-  }, {
-    key: "getOppositePoint",
-    value: function getOppositePoint(column, row) {
-      // Fetches a vertically and horizontally symmetrical GridPoint based on a source GridPoint (defined by a column and a row coordinate).
-      // column -> column index of source point
-      // row -> row index of source point
-      var gridWidth = this.numX - 1;
-      var gridHeight = this.numY - 1;
-      var oppositeX = gridWidth - column;
-      var oppositeY = gridHeight - row;
-      return this.getPoint(oppositeX, oppositeY);
-    }
-  }, {
-    key: "getOppositePointVert",
-    value: function getOppositePointVert(column, row) {
-      // Fetches a vertically symmetrical POINT based on a source POINT and POINT_GRID
-      // Where:
-      // column -> column index of source point
-      // row -> row index of source point
-      var gridHeight = this.numY - 1;
-      var oppositeY = gridHeight - row;
-      return this.getPoint(column, oppositeY);
-    }
-  }, {
-    key: "getOppositePointHor",
-    value: function getOppositePointHor(column, row) {
-      // Fetches a horizontally symmetrical POINT based on a source POINT and POINT_GRID
-      // Where:
-      // _col -> column index of source point
-      // _row -> row index of source point
-      var gridWidth = this.numX - 1;
-      var oppositeX = gridWidth - column;
-      return this.getPoint(oppositeX, row);
-    }
-  }, {
-    key: "getLine",
-    value: function getLine(columnStart, rowStart, columnEnd, rowEnd) {
-      // fetches points on grid according to line given by (columnStart, rowStart), (columnEnd, rowEnd)
-      // uses modified rasterizing algorithm by Alois Zingl (http://members.chello.at/~easyfilter/Bresenham.pdf)
-      // Where:
-      // columnStart, rowStart -> start point of line (by col and row index of POINT_GRID)
-      // columnEnd, rowEnd -> end point of line (by col and row index of POINT_GRID)
-      var result = [];
-      var dx = Math.abs(columnEnd - columnStart);
-      var dy = Math.abs(rowEnd - rowStart) * -1;
-      var sx = columnStart < columnEnd ? 1 : -1;
-      var sy = rowStart < rowEnd ? 1 : -1;
-      var err = dx + dy;
-      var e2;
-
-      while (true) {
-        if (this.checkBounds(columnStart, rowStart, columnEnd, rowEnd)) {
-          result.push(this.getPoint(columnStart, rowStart));
-        }
-
-        e2 = err * 2;
-
-        if (e2 >= dy) {
-          if (columnStart == columnEnd) ;
-          err += dy;
-          columnStart += sx;
-        }
-
-        if (e2 <= dx) {
-          if (rowStart == rowEnd) break;
-          err += dx;
-          rowStart += sy;
-        }
-      }
-
-      return result;
-    }
-  }, {
-    key: "getLineNotOpped",
-    value: function getLineNotOpped(columnStart, rowStart, columnEnd, rowEnd) {
-      // fetches points on grid according to line given by (columnStart, rowStart), (columnEnd, rowEnd)
-      // instead of an optimized algorithm, uses a non-optimized slope-intercept based method.
-      // Where:
-      // columnStart, rowStart -> start point of line (by col and row index of POINT_GRID)
-      // columnEnd, rowEnd -> end point of line (by col and row index of POINT_GRID)
-      var result = [];
-      var dir = columnStart < columnEnd;
-      var startX = dir ? columnStart : columnEnd;
-      var startY = dir ? rowStart : rowEnd;
-      var endX = dir ? columnEnd : columnStart;
-      var endY = dir ? rowEnd : rowStart;
-      var slope = (endY - startY) / (endX - startX);
-      var offset = startY - slope * startX;
-      var y;
-
-      while (startX++ != endX) {
-        y = slope * startX + offset;
-        result.push(this.getPoint(startX, y));
-      }
-
-      return result;
-    }
-  }, {
-    key: "getCircle",
-    value: function getCircle(column, row, radius) {
-      // fetches points on grid according to circle with center (column, row) and radius (radius)
-      // uses modified rasterizing algorithm by Alois Zingl (http://members.chello.at/~easyfilter/Bresenham.pdf)
-      // Where:
-      // column, row -> center of circle
-      // radius -> radius of circle
-      var result = [];
-      var x = -radius;
-      var y = 0;
-      var err = 2 - 2 * radius;
-
-      while (x < 0) {
-        if (column - x < this.numX && column - x > -1 && row + y < this.numY && row + y > -1) {
-          // Same as with line (out of bounds checks).
-          result.push(this.getPoint(column - x, row + y));
-        }
-
-        if (column - y > -1 && column - y < this.numX && row - x < this.numY && row - x > -1) {
-          result.push(this.getPoint(column - y, row - x));
-        }
-
-        if (column + x > -1 && column + x < this.numX && row - y > -1 && row - y < this.numY) {
-          result.push(this.getPoint(column + x, row - y));
-        }
-
-        if (column + y < this.numX && column + y > -1 && row + x > -1 && row + x < this.numY) {
-          result.push(this.getPoint(column + y, row + x));
-        }
-
-        radius = err;
-
-        if (radius <= y) {
-          y += 1;
-          err += y * 2 + 1;
-        }
-
-        if (radius > x || err > y) {
-          x += 1;
-          err += x * 2 + 1;
-        }
-      }
-
-      return this.points;
-    }
-  }, {
-    key: "getPattern",
-    value: function getPattern(column, row, directionList, repetitions) {
-      var overflow = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
-      // fetches points according to a list of directions (explained below) for a certain number of iterations
-      //
-      // column, row -> origin of pattern
-      // directionList -> list of steps to take, where: 0:top, 1:top-right, 2:right, 3:bottom-right, etc.
-      // repetitions -> number of steps to take (from 0, where none are taken, to ...)
-      // overflow -> allow for pattern to wrap around edges (if a similar point is found, pattern will break regardless of reps)
-      var tempResult = new Set(); // Consider just checking ArrayList for duplicates
-
-      var currentPoint = Object.assign({}, this.getPoint(column, row));
-      var step = 0;
-      var pointer = 0;
-      var mod = directionList.length;
-
-      while (step < repetitions) {
-        if (tempResult.contains(currentPoint) || currentPoint == null) break;
-        tempResult.push(Object.assign({}, currentPoint)); //new Grid_Point(currentPoint));
-
-        pointer = step % mod; //print(directionList.get(pointer));
-
-        switch (directionList[pointer]) {
-          case 0:
-            currentPoint = overflow ? this.getPoint(currentPoint.iX, currentPoint.iY - 1) : this.getPointSafe(currentPoint.iX, currentPoint.iY - 1);
-            break;
-
-          case 1:
-            currentPoint = overflow ? this.getPoint(currentPoint.iX + 1, currentPoint.iY - 1) : this.getPointSafe(currentPoint.iX + 1, currentPoint.iY - 1);
-            break;
-
-          case 2:
-            currentPoint = overflow ? this.getPoint(currentPoint.iX + 1, currentPoint.iY) : this.getPointSafe(currentPoint.iX + 1, currentPoint.iY);
-            break;
-
-          case 3:
-            currentPoint = overflow ? this.getPoint(currentPoint.iX + 1, currentPoint.iY + 1) : this.getPointSafe(currentPoint.iX + 1, currentPoint.iY + 1);
-            break;
-
-          case 4:
-            currentPoint = overflow ? this.getPoint(currentPoint.iX, currentPoint.iY + 1) : this.getPointSafe(currentPoint.iX, currentPoint.iY + 1);
-            break;
-
-          case 5:
-            currentPoint = overflow ? this.getPoint(currentPoint.iX - 1, currentPoint.iY + 1) : this.getPointSafe(currentPoint.iX - 1, currentPoint.iY + 1);
-            break;
-
-          case 6:
-            currentPoint = overflow ? this.getPoint(currentPoint.iX - 1, currentPoint.iY) : this.getPointSafe(currentPoint.iX - 1, currentPoint.iY);
-            break;
-
-          case 7:
-            currentPoint = overflow ? this.getPoint(currentPoint.iX - 1, currentPoint.iY - 1) : this.getPointSafe(currentPoint.iX - 1, currentPoint.iY - 1);
-            break;
-        }
-
-        step += 1;
-      }
-
-      return Array.from(tempResult);
-    }
-  }, {
-    key: "getPerlin",
-    value: function getPerlin(low, high) {
-      // Returns a selection of points based on an application of perlin noise
-      // weights onto GridPoints in a given PointGrid, and a threshold to select from
-      // low: bottom cutoff for weight
-      // high: top cutoff for weight
-      var modGrid = PointGrid.clone(this);
-      modGrid.applyPerlin(0, 1, 0, false);
-      return PointGrid.getThreshold(low, high, modGrid);
-    }
-  }, {
-    key: "getRandom",
-    value: function getRandom(low, high) {
-      // Returns a selection of points based on a random application of
-      // weights onto GridPoints in a given PointGrid, and a threshold to select from
-      // Where:
-      // low: bottom cutoff for weight
-      // high: top cutoff for weight
-      var modGrid = PointGrid.clone(this);
-      modGrid.applyRandom(false);
-      return PointGrid.getThreshold(low, high, modGrid);
-    }
-  }, {
-    key: "getThreshold",
-    value: function getThreshold(low, high) {
-      return PointGrid.getThreshold(low, high, this);
-    }
-  }, {
     key: "draw",
-    value:
-    /************************************************/
-
-    /******************* DRAWING ********************/
-
-    /************************************************/
-    function draw(pInstance) {
+    value: function draw(pInstance) {
       var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
       var displayWeight = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
 
@@ -29329,23 +29437,6 @@ var PointGrid = /*#__PURE__*/function () {
       // col -> col value to check
       return col >= 0 && col < this.numX;
     }
-  }], [{
-    key: "getThreshold",
-    value: function getThreshold(low, high, pointGrid) {
-      // retrieves GridPoints whose weight is > low and < high.
-      // low: bottom cutoff for weight
-      // high: top cutoff for weight
-      // pointGrid: grid to sample from
-      var result = [];
-
-      for (var i = 0; i < pointGrid.points.length; i++) {
-        if (pointGrid.points[i].weight > low && pointGrid.points[i].weight < high) {
-          result.push(pointGrid.points[i]);
-        }
-      }
-
-      return result;
-    }
   }]);
 
   return PointGrid;
@@ -29367,7 +29458,7 @@ function populateDefaultPoints(pointGrid) {
     }
   }
 }
-},{"./grid_point":"pgriddy/grid_point.js","./utilities":"pgriddy/utilities.js"}],"index.js":[function(require,module,exports) {
+},{"./grid_point":"pgriddy/grid_point.js","./getters":"pgriddy/getters.js","./utilities":"pgriddy/utilities.js"}],"index.js":[function(require,module,exports) {
 "use strict";
 
 var _point_grid = _interopRequireDefault(require("./pgriddy/point_grid"));
