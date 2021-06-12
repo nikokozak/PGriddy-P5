@@ -29294,7 +29294,74 @@ var getThreshold = function getThreshold(low, high, pointArray) // retrieves Gri
 };
 
 exports.getThreshold = getThreshold;
-},{"./utilities":"pgriddy/utilities.js","./point_grid":"pgriddy/point_grid.js"}],"pgriddy/point_grid.js":[function(require,module,exports) {
+},{"./utilities":"pgriddy/utilities.js","./point_grid":"pgriddy/point_grid.js"}],"pgriddy/drawers.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.drawPoints = exports.drawPA = exports.drawPG = void 0;
+
+var _utilities = require("./utilities");
+
+// VARIOUS DRAWING FUNCTIONS FOR OUR CLASSES
+var drawPG = function drawPG(pointGrid) // Draws all points of a PointGrid pg onto the window
+// type -> Type of Processing object to draw (INT) [1: POINT, 2: CIRCLE, 3: RECT]
+// displayWeight -> Allow weight to dictate the fill
+{
+  return function (pInstance) {
+    var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
+    var displayWeight = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+    drawPoints(pointGrid.points, pInstance, type, displayWeight);
+  };
+};
+
+exports.drawPG = drawPG;
+
+var drawPA = function drawPA(pointArray) // Draws all points in a GridPoit Array onto the window
+// Where:
+// type -> Type of Processing object to draw (INT) [1: POINT, 2: CIRCLE, 3: RECT]
+// displayWeight -> Whether or not to color the points accordint to their associated weights
+{
+  return function (pInstance) {
+    var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
+    var displayWeight = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+    drawPoints(pointArray.points, pInstance, type, displayWeight);
+  };
+};
+
+exports.drawPA = drawPA;
+
+var drawPoints = function drawPoints(points, pInstance, type, displayWeight) {
+  for (var i = 0; i < points.length; i++) {
+    if (displayWeight) {
+      var col = (0, _utilities.weightToRGB)(points[i].weight);
+      pInstance.stroke(col);
+      pInstance.fill(col);
+    } else {
+      pInstance.stroke(255);
+      pInstance.fill(255);
+    }
+
+    switch (type) {
+      case 1:
+        pInstance.point(points[i].x, points[i].y);
+        break;
+
+      case 2:
+        pInstance.circle(points[i].x, points[i].y, 3);
+        break;
+
+      case 3:
+        pInstance.rectMode(pInstance.CENTER);
+        pInstance.rect(points[i].x, points[i].y, 5, 5);
+        break;
+    }
+  }
+};
+
+exports.drawPoints = drawPoints;
+},{"./utilities":"pgriddy/utilities.js"}],"pgriddy/point_grid.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -29305,6 +29372,8 @@ exports.default = void 0;
 var _grid_point = _interopRequireDefault(require("./grid_point"));
 
 var get = _interopRequireWildcard(require("./getters"));
+
+var _drawers = require("./drawers");
 
 var _utilities = require("./utilities");
 
@@ -29366,56 +29435,22 @@ var PointGrid = /*#__PURE__*/function () {
     this.getThreshold = get.getPGThreshold(this);
     this.getRandom = get.getPGRandom(this);
     this.getPerlin = get.getPGPerlin(this);
+    /************************************************/
+
+    /******************* DRAWING ********************/
+
+    /************************************************/
+
+    this.draw = (0, _drawers.drawPG)(this);
   }
   /************************************************/
 
-  /******************* DRAWING ********************/
+  /******************* UTILS **********************/
 
   /************************************************/
 
 
   _createClass(PointGrid, [{
-    key: "draw",
-    value: function draw(pInstance) {
-      var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
-      var displayWeight = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
-
-      // Draws all points of a PointGrid pg onto the window
-      // type -> Type of Processing object to draw (INT) [1: POINT, 2: CIRCLE, 3: RECT]
-      // displayWeight -> Allow weight to dictate the fill
-      for (var i = 0; i < this.points.length; i++) {
-        if (displayWeight) {
-          var col = (0, _utilities.weightToRGB)(this.points[i].weight);
-          pInstance.stroke(col);
-          pInstance.fill(col);
-        } else {
-          pInstance.stroke(255);
-          pInstance.fill(255);
-        }
-
-        switch (type) {
-          case 1:
-            pInstance.point(this.points[i].x, this.points[i].y);
-            break;
-
-          case 2:
-            pInstance.circle(this.points[i].x, this.points[i].y, 3);
-            break;
-
-          case 3:
-            pInstance.rectMode(pInstance.CENTER);
-            pInstance.rect(this.points[i].x, this.points[i].y, 5, 5);
-            break;
-        }
-      }
-    }
-    /************************************************/
-
-    /******************* UTILS **********************/
-
-    /************************************************/
-
-  }, {
     key: "checkBounds",
     value: function checkBounds(columnStart, rowStart, columnEnd, rowEnd) {
       // Checks whether the given row and column values exceed the number of columns and rows in a POINT_GRID
@@ -29458,7 +29493,7 @@ function populateDefaultPoints(pointGrid) {
     }
   }
 }
-},{"./grid_point":"pgriddy/grid_point.js","./getters":"pgriddy/getters.js","./utilities":"pgriddy/utilities.js"}],"index.js":[function(require,module,exports) {
+},{"./grid_point":"pgriddy/grid_point.js","./getters":"pgriddy/getters.js","./drawers":"pgriddy/drawers.js","./utilities":"pgriddy/utilities.js"}],"index.js":[function(require,module,exports) {
 "use strict";
 
 var _point_grid = _interopRequireDefault(require("./pgriddy/point_grid"));

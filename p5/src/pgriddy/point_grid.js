@@ -1,5 +1,6 @@
 import GridPoint from './grid_point';
 import * as get from './getters';
+import { drawPG } from './drawers';
 import { arraySelector, weightToRGB } from './utilities';
 
 /*
@@ -52,43 +53,12 @@ export default class PointGrid
     this.getRandom = get.getPGRandom(this);
     this.getPerlin = get.getPGPerlin(this);
 
-  }
+    /************************************************/
+    /******************* DRAWING ********************/
+    /************************************************/
 
+    this.draw = drawPG(this);
 
-
-
-  /************************************************/
-  /******************* DRAWING ********************/
-  /************************************************/
-
-  draw(pInstance, type = 1, displayWeight = true)
-  {
-    // Draws all points of a PointGrid pg onto the window
-    // type -> Type of Processing object to draw (INT) [1: POINT, 2: CIRCLE, 3: RECT]
-    // displayWeight -> Allow weight to dictate the fill
-    for (let i = 0; i < this.points.length; i++) {
-      if (displayWeight) {
-        const col = weightToRGB(this.points[i].weight);
-        pInstance.stroke(col);
-        pInstance.fill(col);
-      } else {
-        pInstance.stroke(255);
-        pInstance.fill(255);
-      }
-
-      switch(type) {
-      case 1:
-        pInstance.point(this.points[i].x, this.points[i].y);
-        break;
-      case 2:
-        pInstance.circle(this.points[i].x, this.points[i].y, 3);
-        break;
-      case 3:
-        pInstance.rectMode(pInstance.CENTER);
-        pInstance.rect(this.points[i].x, this.points[i].y, 5, 5);
-        break;
-      }
-    }
   }
 
   /************************************************/
