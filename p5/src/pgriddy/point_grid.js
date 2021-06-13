@@ -1,6 +1,6 @@
 import GridPoint from './grid_point';
 import * as get from './getters';
-import { drawPG } from './drawers';
+import { draw } from './drawers';
 import { arraySelector, weightToRGB } from './utilities';
 
 /*
@@ -57,7 +57,7 @@ export default class PointGrid
     /******************* DRAWING ********************/
     /************************************************/
 
-    this.draw = drawPG(this);
+    this.draw = draw(this.points);
 
   }
 

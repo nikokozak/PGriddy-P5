@@ -2,24 +2,13 @@ import { weightToRGB } from './utilities';
 
 // VARIOUS DRAWING FUNCTIONS FOR OUR CLASSES
 
-export const drawPG = (pointGrid) =>
-  // Draws all points of a PointGrid pg onto the window
+export const draw = (points) =>
+  // Draws all points of a list of poitns onto the window
   // type -> Type of Processing object to draw (INT) [1: POINT, 2: CIRCLE, 3: RECT]
   // displayWeight -> Allow weight to dictate the fill
 {
   return (pInstance, type = 1, displayWeight = true) => {
-    drawPoints(pointGrid.points, pInstance, type, displayWeight);
-  };
-}
-
-export const drawPA = (pointArray) =>
-  // Draws all points in a GridPoit Array onto the window
-  // Where:
-  // type -> Type of Processing object to draw (INT) [1: POINT, 2: CIRCLE, 3: RECT]
-  // displayWeight -> Whether or not to color the points accordint to their associated weights
-{
-  return (pInstance, type = 1, displayWeight = true) => {
-    drawPoints(pointArray.points, pInstance, type, displayWeight);
+    drawPoints(points, pInstance, type, displayWeight);
   };
 }
 

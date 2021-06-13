@@ -1,3 +1,4 @@
+import { draw } from './drawers'
 /*
   A SELECTION is a data structure
 
@@ -29,6 +30,8 @@ export default class Selection {
       throw("Selection exceeds PointGrid bounds, or col/row inputs are wrong.");
 
     }
+
+    this.draw = draw(this.points);
 
   }
 

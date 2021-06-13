@@ -28914,7 +28914,14 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.arraySelector = arraySelector;
 exports.map = map;
+exports.clamp = clamp;
 exports.weightToRGB = weightToRGB;
+exports.rgbToLuma = rgbToLuma;
+exports.plotInCircle = plotInCircle;
+exports.plotCircleTop = plotCircleTop;
+exports.plotCircleBottom = plotCircleBottom;
+exports.sinMap = sinMap;
+exports.easeInOutCubic = easeInOutCubic;
 
 function arraySelector(column, row, matrixWidth, array) {
   return array[row * matrixWidth + column];
@@ -28924,8 +28931,81 @@ function map(source, inMin, inMax, outMin, outMax) {
   return (source - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
 }
 
-function weightToRGB(weight) {
+function clamp(input, floor, ceiling) {
+  return Math.min(Math.max(input, floor), ceiling);
+}
+
+function weightToRGB(weight) // Maps alpha values (1.00 - 0.00) to std RGB vals (255-0)
+// Where:
+// _in -> alpha value to map
+{
   return map(weight, 0.0, 1.0, 0, 255);
+}
+
+function rgbToLuma(red, green, blue) // Approximate Luma value from RGB values, rough approximation (takes values of 0-255 and returns same range).
+// Where:
+// _r -> red channel
+// _g -> green channel
+// _b -> blue channel
+{
+  return red + red + red + blue + green + green + green + green >> 3;
+}
+
+function plotInCircle(input, centerX, centerY, radius) // Returns a 2-value Tuple containing positive and negative Y values of a desired circle.
+// NOTE: Avoid use if possible (function uses sqrt).
+// Where:
+// _x -> x value to apply f(x)
+// _centerX, _centerY -> center of desired circle
+// _r -> radius of desired circle
+{
+  var posY = plotCircleTop(input, centerX, centerY, radius);
+  var negY = posY * -1 + centerY * 2;
+  return {
+    a: posY,
+    b: negY
+  };
+}
+
+function plotCircleTop(input, centerX, centerY, radius) // Returns the positive Y value corresponding to a given X of a desired circle.
+// NOTE: Avoid use if possible (function uses sqrt).
+// Where:
+// _x -> x value to apply f(x)
+// _centerX, _centerY -> center of desired circle
+// _r -> radius of desired circle
+{
+  return Math.sqrt(Math.pow(r, 2) - Math.pow(input - centerX, 2)) + centerY;
+}
+
+function plotCircleBottom(input, centerX, centerY, radius) // Returns the negative Y value corresponding to a given X of a desired circle.
+// NOTE: Avoid use if possible (function uses sqrt).
+// Where:
+// _x -> x value to apply f(x)
+// _centerX, _centerY -> center of desired circle
+// _r -> radius of desired circle
+{
+  return plotCircleTop(input, centerX, centerY, radius) * -1;
+}
+
+function sinMap(input, frequency, shift) // A sin function, returns a value between 1 and -1.
+// Where:
+// _x -> input value to map
+// _amp -> amplitude of function
+// _freq -> frequency of function
+// _shift -> x-axis shift of function
+{
+  return Math.sin(frequency * input - frequency * shift);
+}
+
+function easeInOutCubic(input, begin, change, duration) // Maps an x value to a y value using an in-out-cubic easing function
+// Adapted from Robert Penner's Easing Functions
+// Where:
+// _x -> x value to map
+// _begin -> beginning value
+// _change -> change in value
+// _duration -> duration or extent of function
+{
+  if ((input /= duration / 2) < 1) return change / 2 * Math.pow(input, 3) + begin;
+  return change / 2 * ((input -= 2) * input * input + 2) + begin;
 }
 },{}],"pgriddy/getters.js":[function(require,module,exports) {
 "use strict";
@@ -29300,37 +29380,23 @@ exports.getThreshold = getThreshold;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.drawPoints = exports.drawPA = exports.drawPG = void 0;
+exports.drawPoints = exports.draw = void 0;
 
 var _utilities = require("./utilities");
 
 // VARIOUS DRAWING FUNCTIONS FOR OUR CLASSES
-var drawPG = function drawPG(pointGrid) // Draws all points of a PointGrid pg onto the window
+var draw = function draw(points) // Draws all points of a list of poitns onto the window
 // type -> Type of Processing object to draw (INT) [1: POINT, 2: CIRCLE, 3: RECT]
 // displayWeight -> Allow weight to dictate the fill
 {
   return function (pInstance) {
     var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
     var displayWeight = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
-    drawPoints(pointGrid.points, pInstance, type, displayWeight);
+    drawPoints(points, pInstance, type, displayWeight);
   };
 };
 
-exports.drawPG = drawPG;
-
-var drawPA = function drawPA(pointArray) // Draws all points in a GridPoit Array onto the window
-// Where:
-// type -> Type of Processing object to draw (INT) [1: POINT, 2: CIRCLE, 3: RECT]
-// displayWeight -> Whether or not to color the points accordint to their associated weights
-{
-  return function (pInstance) {
-    var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
-    var displayWeight = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
-    drawPoints(pointArray.points, pInstance, type, displayWeight);
-  };
-};
-
-exports.drawPA = drawPA;
+exports.draw = draw;
 
 var drawPoints = function drawPoints(points, pInstance, type, displayWeight) {
   for (var i = 0; i < points.length; i++) {
@@ -29441,7 +29507,7 @@ var PointGrid = /*#__PURE__*/function () {
 
     /************************************************/
 
-    this.draw = (0, _drawers.drawPG)(this);
+    this.draw = (0, _drawers.draw)(this.points);
   }
   /************************************************/
 
