@@ -1,4 +1,4 @@
-import { draw } from './drawers'
+import { draw } from './drawers';
 /*
   A SELECTION is a data structure
 
