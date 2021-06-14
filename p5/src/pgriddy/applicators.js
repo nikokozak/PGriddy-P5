@@ -105,6 +105,7 @@ export const multPositionsWeighted = (points) =>
   };
 };
 
+
 export const applyPGLinRadGradientSlow = (pointGrid) =>
 {
   // Modifies weights of Grid_Points in a given Point_Grid according to a radial gradient, returns a new Point_Grid
@@ -117,62 +118,17 @@ export const applyPGLinRadGradientSlow = (pointGrid) =>
   // _sample_rate -> radius increment per cycle (think of this as sampling density, if there are empty points in gradient then reduce this number, NOT TOO FAR THOUGH).
   // _inverse -> whether to invert the gradient
   // _blend -> whether to add the gradient onto the previous Point_Grid or start anew
-  return (params) =>
-  {
-    let column = params.column || 0;
-    let row = params.row || 0;
-    let radius = params.radius || 10;
-    let initDecay = params.initDecay || 1;
-    let sampleRate = params.sampleRate || 0.5;
-    let inverse = params.inverse || false;
-    let blend = params.blend || false;
+  const applicatorFn = makeSlowRadialApplicator((context) => {
+    const decayFactor = context.radius / context.sampleRate;
+    const decay = context.initWeight / decayFactor;
 
-    let currRad = 0;
-    let initX = column - radius;
-    let finX = column + radius;
-    let currX = initX;
-    let currWeight = initDecay;
-    let decayFactor = radius / sampleRate;
-    let decay = initDecay / decayFactor;
+    return context.inverse ? 
+      context.currWeight + decay :
+      context.currWeight - decay;
+  });
 
-    let yVal = {};
+  return applicatorFn(pointGrid);
 
-    while (currRad <= radius) {
-
-      while (currX <= finX) {
-
-        yVal = plotInCircle(currX, column, row, currRad);
-
-        if (pointGrid.checkColumnBounds(currX) && pointGrid.checkRowBounds(yVal.a)) {
-          const point = pointGrid.getPoint(currX, yVal.a);
-          point.weight =
-            blend ?
-            clamp(point.weight + currWeight, 0, 1)
-            : currWeight;
-        }
-
-        if (pointGrid.checkColumnBounds(currX) && pointGrid.checkRowBounds(yVal.b)) {
-          const point = pointGrid.getPoint(currX, yVal.b);
-          point.weight =
-            blend ?
-            clamp(point.weight + currWeight, 0, 1)
-            : currWeight;
-        }
-
-        currX++;
-
-      }
-
-      currRad += sampleRate;
-      currX = initX;
-      currWeight = inverse ? currWeight + decay : currWeight - decay;
-      currWeight = clamp(currWeight, 0, 1);
-
-    }
-
-    return pointGrid.points;
-
-  };
 }
 
 
@@ -186,69 +142,17 @@ export const applyPGLinRadGradient = (pointGrid) =>
   // inverse -> whether to invert the gradient
   // blend -> whether to add the gradient onto the previous Point_Grid or start anew
 {
-  return (params) =>
-  {
-    let column = params.column || 0;
-    let row = params.row || 0;
-    let radius = params.radius || 10;
-    let initWeight = params.initDecay || 1;
-    let inverse = params.inverse || false;
-    let blend = params.blend || false;
 
-    let currRad = 0;
-    let innerRad = 0;
-    let currWeight = initWeight;
-    let decay = initWeight / radius;
+  const applicatorFn = makeRadialApplicator((context) => {
+    const decay = context.initWeight / context.radius;
 
-    if (pointGrid.checkColumnBounds(column) && pointGrid.checkRowBounds(row)) {
-      pointGrid.getPoint(column, row).weight = currWeight;
-    }
+    return context.inverse ? 
+      context.currWeight + decay :
+      context.currWeight - decay;
+  });
 
-    while (currRad <= radius) {
-      innerRad = currRad;
-      let x = currRad;
-      let y = 0;
-      let err = 2 - 2 * currRad;
-      console.log("Curr rad: " + currRad + " Curr rad: " + radius);
+  return applicatorFn(pointGrid);
 
-      while (x < 0) {
-
-        if (pointGrid.checkColumnBounds(column - x) && pointGrid.checkRowBounds(row + y)) {
-          pointGrid.getPoint(column - x, row + y).weight = currWeight;
-        }
-        if (pointGrid.checkColumnBounds(column - y) && pointGrid.checkRowBounds(row - x)) {
-          pointGrid.getPoint(column - y, row - x).weight = currWeight;
-        }
-        if (pointGrid.checkColumnBounds(column + x) && pointGrid.checkRowBounds(row - y)) {
-          pointGrid.getPoint(column + x, row - y).weight = currWeight;
-        }
-        if (pointGrid.checkColumnBounds(column + y) && pointGrid.checkRowBounds(row + x)) {
-          pointGrid.getPoint(column + y, row + x).weight = currWeight;
-        }
-
-        innerRad = err;
-
-        if (innerRad <= 0) {
-          y += 1;
-          err += 2 * y + 1;
-        }
-        if (innerRad > 0) {
-          x += 1;
-          err += 2 * x + 1;
-        }
-      }
-
-      currRad += 1;
-      currWeight = inverse ? currWeight + decay : currWeight - decay;
-      currWeight = clamp(currWeight, 0, 1);
-
-    }
-
-    if (blend) {} // !TODO!
-
-    return pointGrid.points;
-
-  };
 }
 
 export const applyPGSmoothGradient = (pointGrid) =>
@@ -261,71 +165,15 @@ export const applyPGSmoothGradient = (pointGrid) =>
   // _inverse -> whether to invert the gradient
   // _blend -> whether to add the gradient onto the previous Point_Grid or start anew
 {
-  return (params) =>
-  {
-    let column = params.column || 0;
-    let row = params.row || 0;
-    let radius = params.radius || 10;
-    let initWeight = params.initDecay || 1;
-    let inverse = params.inverse || false;
-    let blend = params.blend || false;
+  const applicatorFn = makeRadialApplicator((context) => {
+    return easeInOutCubic(context.currRad,
+      context.inverse ? 0 : context.initWeight,
+      context.inverse ? context.initWeight : context.initWeight * -1,
+      context.radius);
+  });
 
-    let currRad = 0;
-    let innerRad = 0;
-    let currWeight = initWeight;
+  return applicatorFn(pointGrid);
 
-    if (pointGrid.checkColumnBounds(column) && pointGrid.checkRowBounds(row)) {
-      pointGrid.getPoint(column, row).weight = currWeight;
-    }
-
-    while (currRad <= radius) {
-
-      innerRad = currRad;
-      let x = currRad * -1;
-      let y = 0;
-      let err = 2 - 2 * currRad;
-
-      while (x < 0) {
-        if (pointGrid.checkColumnBounds(column - x) && pointGrid.checkRowBounds(row + y)) {
-          pointGrid.getPoint(column - x, row + y).weight = currWeight;
-        }
-        if (pointGrid.checkColumnBounds(column - y) && pointGrid.checkRowBounds(row - x)) {
-          pointGrid.getPoint(column - y, row - x).weight = currWeight;
-        }
-        if (pointGrid.checkColumnBounds(column + x) && pointGrid.checkRowBounds(row - y)) {
-          pointGrid.getPoint(column + x, row - y).weight = currWeight;
-        }
-        if (pointGrid.checkColumnBounds(column + y) && pointGrid.checkColumnBounds(row + x)) {
-          pointGrid.getPoint(column + y, row + x).weight = currWeight;
-        }
-
-        innerRad = err;
-
-        if (innerRad <= 0) {
-          y += 1;
-          err += 2 * y + 1;
-        }
-
-        if (innerRad > 0) {
-          x += 1;
-          err += 2 * x + 1;
-        }
-      }
-
-      currRad += 1;
-
-      currWeight = easeInOutCubic(currRad,
-                                  inverse ? 0 : initWeight,
-                                  inverse ? initWeight : -initWeight,
-                                  radius);
-      currWeight = clamp(currWeight, 0, 1);
-
-    }
-
-    if (blend) {} // TODO
-
-    return pointGrid.points;
-  };
 };
 
 export const applyPGSmoothRadGradientSlow = (pointGrid) =>
@@ -340,63 +188,15 @@ export const applyPGSmoothRadGradientSlow = (pointGrid) =>
 // _sample_rate -> radius increment per cycle (think of this as sampling density, if there are empty points in gradient then reduce this number, NOT TOO FAR THOUGH).
 // _inverse -> whether to invert the gradient
 // _blend -> whether to allow blending with previous weights (otherwise gradient overrides previous weights)
-  return (params) =>
-  {
-    let column = params.column || 0;
-    let row = params.row || 0;
-    let radius = params.radius || 10;
-    let initDecay = params.initDecay || 1;
-    let sampleRate = params.sampleRate || 0.5;
-    let inverse = params.inverse || false;
-    let blend = params.blend || false;
+  const applicatorFn = makeSlowRadialApplicator((context) => {
+    return easeInOutCubic(context.currRad,
+      context.inverse ? 0 : context.initWeight,
+      context.inverse ? context.initWeight : context.initWeight * -1,
+      context.radius);
+  });
 
-    let currRad = 0;
-    let initX = column - radius;
-    let finX = column + radius;
-    let currX = initX;
-    let currWeight = initDecay;
+  return applicatorFn(pointGrid);
 
-    let yVal = {};
-
-    while (currRad <= radius) {
-
-      while (currX <= finX) {
-
-        yVal = plotInCircle(currX, column, row, currRad);
-
-        if (pointGrid.checkColumnBounds(currX) && pointGrid.checkRowBounds(yVal.a)) {
-          const point = pointGrid.getPoint(currX, yVal.a);
-          point.weight =
-            blend ?
-            clamp(point.weight + currWeight, 0, 1)
-            : currWeight;
-        }
-
-        if (pointGrid.checkColumnBounds(currX) && pointGrid.checkRowBounds(yVal.b)) {
-          const point = pointGrid.getPoint(currX, yVal.b);
-          point.weight =
-            blend ?
-            clamp(point.weight + currWeight, 0, 1)
-            : currWeight;
-        }
-
-        currX++;
-
-      }
-
-      currRad += sampleRate;
-      currX = initX;
-      currWeight = easeInOutCubic(currRad, 
-        inverse ? 0 : initWeight, 
-        inverse ? initWeight : initWeight * -1,
-        radius);
-      currWeight = clamp(currWeight, 0, 1);
-
-    }
-
-    return pointGrid.points;
-
-  };
 }
 
 export const applyPGSinRadGradient = (pointGrid) =>
@@ -409,69 +209,15 @@ export const applyPGSinRadGradient = (pointGrid) =>
 // _inverse -> whether to invert the gradient
 // _blend -> whether to add the gradient onto the previous Point_Grid or start anew
 {
-  return (params) =>
-  {
-    let column = params.column || 0;
-    let row = params.row || 0;
-    let radius = params.radius || 10;
-    let initWeight = params.initDecay || 1;
-    let blend = params.blend || false;
-    let frequency = params.frequency || 1;
-    let shift = params.shift || 1;
+  
+  const applicatorFn = makeRadialApplicator((context) => {
+    const frequency = context.params.frequency || 1;
+    const shift = context.params.shift || 1;
+    return sinMap(context.currRad, frequency, shift);
+  });
 
-    let currRad = 0;
-    let innerRad = 0;
-    let currWeight = initWeight;
+  return applicatorFn(pointGrid);
 
-    if (pointGrid.checkColumnBounds(column) && pointGrid.checkRowBounds(row)) {
-      pointGrid.getPoint(column, row).weight = currWeight;
-    }
-
-    while (currRad <= radius) {
-
-      innerRad = currRad;
-      let x = currRad * -1;
-      let y = 0;
-      let err = 2 - 2 * currRad;
-
-      while (x < 0) {
-        if (pointGrid.checkColumnBounds(column - x) && pointGrid.checkRowBounds(row + y)) {
-          pointGrid.getPoint(column - x, row + y).weight = currWeight;
-        }
-        if (pointGrid.checkColumnBounds(column - y) && pointGrid.checkRowBounds(row - x)) {
-          pointGrid.getPoint(column - y, row - x).weight = currWeight;
-        }
-        if (pointGrid.checkColumnBounds(column + x) && pointGrid.checkRowBounds(row - y)) {
-          pointGrid.getPoint(column + x, row - y).weight = currWeight;
-        }
-        if (pointGrid.checkColumnBounds(column + y) && pointGrid.checkColumnBounds(row + x)) {
-          pointGrid.getPoint(column + y, row + x).weight = currWeight;
-        }
-
-        innerRad = err;
-
-        if (innerRad <= 0) {
-          y += 1;
-          err += 2 * y + 1;
-        }
-
-        if (innerRad > 0) {
-          x += 1;
-          err += 2 * x + 1;
-        }
-      }
-
-      currRad += 1;
-
-      currWeight = sinMap(currRad, frequency, shift);
-      currWeight = clamp(currWeight, 0, 1);
-
-    }
-
-    if (blend) {} // TODO
-
-    return pointGrid.points;
-  };
 };
 
 export const applyPGSinRadGradientSlow = (pointGrid) =>
@@ -486,61 +232,17 @@ export const applyPGSinRadGradientSlow = (pointGrid) =>
 // _sample_rate -> radius increment per cycle (think of this as sampling density, if there are empty points in gradient then reduce this number, NOT TOO FAR THOUGH).
 // _inverse -> whether to invert the gradient
 // _blend -> whether to allow blending with previous weights (otherwise gradient overrides previous weights)
-  return (params) =>
-  {
-    let column = params.column || 0;
-    let row = params.row || 0;
-    let radius = params.radius || 10;
-    let initDecay = params.initDecay || 1;
-    let sampleRate = params.sampleRate || 0.5;
-    let frequency = params.frequency || 1;
-    let shift = params.shift || 1;
-    let blend = params.blend || false;
+  
+  const applicatorFn = makeSlowRadialApplicator((context) => {
+    // Freq and shift can be passed in as params to the final func.
+    const frequency = context.params.frequency || 1;
+    const shift = context.params.shift || 1;
 
-    let currRad = 0;
-    let initX = column - radius;
-    let finX = column + radius;
-    let currX = initX;
-    let currWeight = initDecay;
+    return sinMap(context.currRad, frequency, shift);
+  });
 
-    let yVal = {};
+  return applicatorFn(pointGrid);
 
-    while (currRad <= radius) {
-
-      while (currX <= finX) {
-
-        yVal = plotInCircle(currX, column, row, currRad);
-
-        if (pointGrid.checkColumnBounds(currX) && pointGrid.checkRowBounds(yVal.a)) {
-          const point = pointGrid.getPoint(currX, yVal.a);
-          point.weight =
-            blend ?
-            clamp(point.weight + currWeight, 0, 1)
-            : currWeight;
-        }
-
-        if (pointGrid.checkColumnBounds(currX) && pointGrid.checkRowBounds(yVal.b)) {
-          const point = pointGrid.getPoint(currX, yVal.b);
-          point.weight =
-            blend ?
-            clamp(point.weight + currWeight, 0, 1)
-            : currWeight;
-        }
-
-        currX++;
-
-      }
-
-      currRad += sampleRate;
-      currX = initX;
-      currWeight = sinMap(currRad, frequency, shift);
-      currWeight = clamp(currWeight, 0, 1);
-
-    }
-
-    return pointGrid.points;
-
-  };
 }
 
 export const applyPerlin = (points) =>
@@ -590,4 +292,147 @@ export const applyPGImage = (pointGrid) =>
     // TODO: Figure out how to bring in P5 sensibly as dependency.   
   }
 }
+
+const makeSlowRadialApplicator = (weightFn) =>
+  // Factory for slow radial applicator functions. 
+  // Takes a weight function which in turn receives all variables in the applicator builder function scope.
+  // Returns a curried function that must then be curried again with again with a pointGrid.
+  // Further variable declarations can be made in the weightFn declaration, using the context to fetch params for example.
+{
+  return (pointGrid) => {
+    return (params) =>
+    {
+      let scope = this;
+      let column = params.column || 0;
+      let row = params.row || 0;
+      let radius = params.radius || 10;
+      let initWeight = params.initWeight || 1;
+      let sampleRate = params.sampleRate || 0.5;
+      let blend = params.blend || false;
+      let inverse = params.inverse || false;
+
+      let currRad = 0;
+      let initX = column - radius;
+      let finX = column + radius;
+      let currX = initX;
+      let currWeight = initWeight;
+
+      let yVal = {};
+
+      while (currRad <= radius) {
+
+        while (currX <= finX) {
+
+          yVal = plotInCircle(currX, column, row, currRad);
+
+          if (pointGrid.checkColumnBounds(currX) && pointGrid.checkRowBounds(yVal.a)) {
+            const point = pointGrid.getPoint(currX, yVal.a);
+            point.weight =
+              blend ?
+              clamp(point.weight + currWeight, 0, 1)
+              : currWeight;
+          }
+
+          if (pointGrid.checkColumnBounds(currX) && pointGrid.checkRowBounds(yVal.b)) {
+            const point = pointGrid.getPoint(currX, yVal.b);
+            point.weight =
+              blend ?
+              clamp(point.weight + currWeight, 0, 1)
+              : currWeight;
+          }
+
+          currX++;
+
+        }
+
+        currRad += sampleRate;
+        currX = initX;
+        currWeight = weightFn(scope);
+        currWeight = clamp(currWeight, 0, 1);
+
+      }
+
+      return pointGrid.points;
+
+    };
+  }
+}
+
+const makeRadialApplicator = (weightFn) =>
+  // Modifies weights of Grid_Points in a given Point_Grid according to a radial gradient, using an in-out-easing function. Returns a new Point_Grid
+  // uses modified rasterizing algorithm by Alois Zingl (http://members.chello.at/~easyfilter/Bresenham.pdf)
+  // Where:
+  // _col, _row -> origin of gradient
+  // _rad -> radius of gradient (i.e. extent of gradient effect)
+  // _init_weight -> initial weight value for gradient
+  // _inverse -> whether to invert the gradient
+  // _blend -> whether to add the gradient onto the previous Point_Grid or start anew
+{
+  return (pointGrid) =>
+  {
+    return (params) =>
+    {
+      let context = this;
+      let column = params.column || 0;
+      let row = params.row || 0;
+      let radius = params.radius || 10;
+      let initWeight = params.initWeight || 1;
+      let inverse = params.inverse || false;
+      let blend = params.blend || false;
+
+      let currRad = 0;
+      let innerRad = 0;
+      let currWeight = initWeight;
+
+      if (pointGrid.checkColumnBounds(column) && pointGrid.checkRowBounds(row)) {
+        pointGrid.getPoint(column, row).weight = currWeight;
+      }
+
+      while (currRad <= radius) {
+
+        innerRad = currRad;
+        let x = currRad * -1;
+        let y = 0;
+        let err = 2 - 2 * currRad;
+
+        while (x < 0) {
+          if (pointGrid.checkColumnBounds(column - x) && pointGrid.checkRowBounds(row + y)) {
+            pointGrid.getPoint(column - x, row + y).weight = currWeight;
+          }
+          if (pointGrid.checkColumnBounds(column - y) && pointGrid.checkRowBounds(row - x)) {
+            pointGrid.getPoint(column - y, row - x).weight = currWeight;
+          }
+          if (pointGrid.checkColumnBounds(column + x) && pointGrid.checkRowBounds(row - y)) {
+            pointGrid.getPoint(column + x, row - y).weight = currWeight;
+          }
+          if (pointGrid.checkColumnBounds(column + y) && pointGrid.checkColumnBounds(row + x)) {
+            pointGrid.getPoint(column + y, row + x).weight = currWeight;
+          }
+
+          innerRad = err;
+
+          if (innerRad <= 0) {
+            y += 1;
+            err += 2 * y + 1;
+          }
+
+          if (innerRad > 0) {
+            x += 1;
+            err += 2 * x + 1;
+          }
+        }
+
+        currRad += 1;
+
+        currWeight = weightFn(context);
+        currWeight = clamp(currWeight, 0, 1);
+
+      }
+
+      if (blend) {} // TODO
+
+      return pointGrid.points;
+    };
+  }
+};
 
