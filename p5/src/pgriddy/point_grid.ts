@@ -1,8 +1,8 @@
+import Point from './point';
 import GridPoint from './grid_point';
 import * as get from './getters';
 import * as apps from './applicators';
 import { draw } from './drawers';
-import { arraySelector, weightToRGB } from './utilities';
 
 /*
   The POINT GRID class.
@@ -20,8 +20,56 @@ import { arraySelector, weightToRGB } from './utilities';
 
 export default class PointGrid
 {
+  numX: number;
+  numY: number;
+  center: Point;
+  sX: number;
+  sY: number;
+  xOrigin: number;
+  yOrigin: number;
+  points: Array<GridPoint>;
 
-  constructor(numberX, numberY, centerPoint, spacingX, spacingY)
+  // GETTERS
+  getPoint: Function;
+  getPointSafe: Function;
+  getColumnByIndex: Function;
+  getRowByIndex: Function;
+  getOppositePoint: Function;
+  getOppositePointVert: Function;
+  getOppositePointHor: Function;
+  getLine: Function;
+  getLineNotOpped: Function;
+  getCircle: Function;
+  getPattern: Function;
+  getThreshold: Function;
+  getRandom: Function;
+  getPerlin: Function;
+  getSimplex: Function;
+
+  draw: Function;
+
+  setWeights: Function;
+  addToWeights: Function;
+  multiplyWeights: Function;
+  addToPositions: Function;
+  addToPositionsWeighted: Function;
+  multPositions: Function;
+  multPositionsWeighted: Function;
+  applyLinRadGradientSlow: Function;
+  applyLinRadGradient: Function;
+  applySmoothRadGradientSlow: Function;
+  applySmoothRadGradient: Function;
+  applySinRadGradientSlow: Function;
+  applySinRadGradient: Function;
+  applyPerlin: Function;
+  applySimplex: Function;
+  applyRandom: Function;
+
+  constructor(numberX: number,
+              numberY: number,
+              centerPoint: Point, 
+              spacingX: number,
+              spacingY: number)
   {
     this.numX = numberX;
     this.numY = numberY;
@@ -50,9 +98,10 @@ export default class PointGrid
     this.getLineNotOpped = get.getPGLineNotOpped(this);
     this.getCircle = get.getPGCircle(this);
     this.getPattern = get.getPGPattern(this);
-    this.getThreshold = get.getPGThreshold(this);
-    this.getRandom = get.getPGRandom(this);
-    this.getPerlin = get.getPGPerlin(this);
+    this.getThreshold = get.getThreshold(this.points);
+    this.getRandom = get.getRandom(this.points);
+    this.getPerlin = get.getPerlin(this.points);
+    this.getSimplex = get.getSimplex(this.points);
 
     /************************************************/
     /******************* DRAWING ********************/
@@ -86,7 +135,10 @@ export default class PointGrid
   /******************* UTILS **********************/
   /************************************************/
 
-  checkBounds(columnStart, rowStart, columnEnd, rowEnd)
+  checkBounds(columnStart: number,
+              rowStart: number,
+              columnEnd: number,
+              rowEnd: number) : boolean
   {
     // Checks whether the given row and column values exceed the number of columns and rows in a POINT_GRID
     // columnStart, rowStart -> initial col and row values
@@ -97,14 +149,14 @@ export default class PointGrid
       this.checkColBounds(columnEnd);
   }
 
-  checkRowBounds(row)
+  checkRowBounds(row: number) : boolean
   {
     // Checks whether the given row exceeds the bounds of the given POINT_GRID
     // row -> row value to check
     return row >= 0 && row < this.numY;
   }
 
-  checkColBounds(col)
+  checkColBounds(col: number) : boolean
   {
     // Checks whether the given column exceeds the bounds of the given POINT_GRID
     // col -> col value to check
@@ -112,7 +164,7 @@ export default class PointGrid
   }
 }
 
-function populateDefaultPoints (pointGrid)
+function populateDefaultPoints (pointGrid: PointGrid) : void
 {
 // Populates the 'pointGrid.points' field
 // in a column-first flat array fashion.

@@ -14,7 +14,14 @@ import Point from './point';
 
 export default class GridPoint extends Point {
 
-  constructor (x, y, gridIndexX, gridIndexY, weight = 1)
+  iX: number;
+  iY: number;
+
+  constructor (x: number,
+               y: number,
+               gridIndexX: number,
+               gridIndexY: number,
+               weight: number = 1)
   {
 
     super(x, y, weight);

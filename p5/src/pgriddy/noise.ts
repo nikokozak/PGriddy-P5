@@ -12,14 +12,14 @@
  * Stefan Gustavson. You may use it as you see fit, but
  * attribution is appreciated.
  *
- * Refactored into ES6 Module pattern by Nikolai Kozak.
+ * Refactored into ES6 Module pattern & ts by Nikolai Kozak.
  *
  * 2021-06-14
  */
 
 // ##### Perlin noise stuff
 
-const fade = (t) =>
+const fade = (t: number) : number =>
 {
   return t*t*t*(t*(t*6-15)+10);
 }
@@ -31,24 +31,26 @@ const lerp1 = (a, b, t) =>
 }
 */
 
-const lerp = (t, a, b) =>
+const lerp = (t: number, a: number, b: number) : number => 
 {
   return a + t*(b-a);
 }
 
 class Grad 
 {
-  constructor (x, y, z) 
+  x: number; y: number; z: number;
+
+  constructor (x: number, y: number, z: number) 
   {
     this.x = x; this.y = y; this.z = z;
   }
 
-  dot2 (x, y)
+  dot2 (x: number, y: number) : number
   {
     return this.x*x + this.y*y;
   };
 
-  dot3 (x, y, z) 
+  dot3 (x: number, y: number, z: number) : number
   {
     return this.x*x + this.y*y + this.z*z;
   };
@@ -63,6 +65,11 @@ const G3 = 1/6;
 
 export default class Noise 
 {
+
+  perm: Array<number>;
+  gradP: Array<Grad>;
+  grad3: Array<Grad>;
+  p: Array<number>;
 
   constructor() 
   // To remove the need for index wrapping, double the permutation table length
@@ -92,7 +99,7 @@ export default class Noise
 
   }
 
-  seed (seed) 
+  seed (seed: number) : void
   // This isn't a very good seeding function, but it works ok. It supports 2^16
   // different seed values. Write something better if you need more seeds.
   // NOTE: Use 0-1 or 0-65536 as seed values.
@@ -121,7 +128,7 @@ export default class Noise
   };
 
   // 2D simplex noise
-  simplex2 (xin, yin)
+  simplex2 (xin: number, yin: number) : number
   {
     var n0, n1, n2; // Noise contributions from the three corners
     // Skew the input space to determine which simplex cell we're in
@@ -180,7 +187,7 @@ export default class Noise
   };
 
   // 3D simplex noise
-  simplex3 (xin, yin, zin)
+  simplex3 (xin: number, yin: number, zin: number) : number
   {
     var n0, n1, n2, n3; // Noise contributions from the four corners
 
@@ -269,7 +276,7 @@ export default class Noise
   };
 
   // 2D Perlin Noise
-  perlin2 (x, y)
+  perlin2 (x: number, y: number) : number
   {
     // Find unit grid cell containing point
     var X = Math.floor(x), Y = Math.floor(y);
@@ -296,7 +303,7 @@ export default class Noise
   };
 
   // 3D Perlin Noise
-  perlin3 (x, y, z)
+  perlin3 (x: number, y: number, z: number) : number
   {
     // Find unit grid cell containing point
     var X = Math.floor(x), Y = Math.floor(y), Z = Math.floor(z);

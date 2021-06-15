@@ -1,4 +1,6 @@
 import { draw } from './drawers';
+import GridPoint from './grid_point';
+import PointGrid from './point_grid';
 /*
   A SELECTION is a data structure
 
@@ -11,10 +13,22 @@ import { draw } from './drawers';
 
 export default class Selection {
 
-  constructor (colStart, rowStart, colEnd, rowEnd, pointGrid)
+  colStart: number;
+  rowStart: number;
+  colEnd: number;
+  rowEnd: number;
+
+  draw: Function;
+  points: Array<GridPoint>;
+
+  constructor (colStart: number,
+               rowStart: number, 
+               colEnd: number, 
+               rowEnd: number, 
+               pointGrid: PointGrid)
   {
 
-    if ( checkBounds(colStart, rowStart, colEnd, rowEnd, pointGrid)
+    if ( pointGrid.checkBounds(colStart, rowStart, colEnd, rowEnd) 
       && colStart <= colEnd
       && rowStart <= rowEnd )
 

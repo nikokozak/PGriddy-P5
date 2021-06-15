@@ -28812,15 +28812,13 @@ var global = arguments[3];
     }]
   }, {}, [245])(245);
 });
-},{}],"pgriddy/point.js":[function(require,module,exports) {
+},{}],"pgriddy/point.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 /*
   The POINT class.
@@ -28832,18 +28830,25 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
   Y - position (cartesian)
   Weight - weight to help with transformations
 */
-var Point = function Point(x, y) {
-  var weight = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 1;
+var Point =
+/** @class */
+function () {
+  function Point(x, y, weight) {
+    if (weight === void 0) {
+      weight = 1;
+    }
 
-  _classCallCheck(this, Point);
+    this.x = x;
+    this.y = y;
+    this.weight = weight;
+  }
 
-  this.x = x;
-  this.y = y;
-  this.weight = weight;
-};
+  return Point;
+}();
 
-exports.default = Point;
-},{}],"pgriddy/grid_point.js":[function(require,module,exports) {
+var _default = Point;
+exports.default = _default;
+},{}],"pgriddy/grid_point.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -28855,23 +28860,33 @@ var _point = _interopRequireDefault(require("./point"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+var __extends = void 0 && (void 0).__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) {
+        if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+      }
+    };
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+    return _extendStatics(d, b);
+  };
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+  return function (d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+    _extendStatics(d, b);
 
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+    function __() {
+      this.constructor = d;
+    }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
 
 /*
   The GRID POINT class.
@@ -28884,19 +28899,18 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
   gridIndexY -> if created as part of a POINT_GRID, ROW index of said POINT_GRID
   weight -> associated weight of point.
 */
-var GridPoint = /*#__PURE__*/function (_Point) {
-  _inherits(GridPoint, _Point);
+var GridPoint =
+/** @class */
+function (_super) {
+  __extends(GridPoint, _super);
 
-  var _super = _createSuper(GridPoint);
+  function GridPoint(x, y, gridIndexX, gridIndexY, weight) {
+    if (weight === void 0) {
+      weight = 1;
+    }
 
-  function GridPoint(x, y, gridIndexX, gridIndexY) {
-    var _this;
+    var _this = _super.call(this, x, y, weight) || this;
 
-    var weight = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 1;
-
-    _classCallCheck(this, GridPoint);
-
-    _this = _super.call(this, x, y, weight);
     _this.iX = gridIndexX;
     _this.iY = gridIndexY;
     return _this;
@@ -28905,8 +28919,9 @@ var GridPoint = /*#__PURE__*/function (_Point) {
   return GridPoint;
 }(_point.default);
 
-exports.default = GridPoint;
-},{"./point":"pgriddy/point.js"}],"pgriddy/utilities.js":[function(require,module,exports) {
+var _default = GridPoint;
+exports.default = _default;
+},{"./point":"pgriddy/point.ts"}],"pgriddy/utilities.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -28922,6 +28937,7 @@ exports.plotCircleTop = plotCircleTop;
 exports.plotCircleBottom = plotCircleBottom;
 exports.sinMap = sinMap;
 exports.easeInOutCubic = easeInOutCubic;
+exports.forEachPoint = exports.attrOrDefault = void 0;
 
 function arraySelector(column, row, matrixWidth, array) {
   return array[column * matrixWidth + row];
@@ -28935,29 +28951,15 @@ function clamp(input, floor, ceiling) {
   return Math.min(Math.max(input, floor), ceiling);
 }
 
-function weightToRGB(weight) // Maps alpha values (1.00 - 0.00) to std RGB vals (255-0)
-// Where:
-// _in -> alpha value to map
-{
+function weightToRGB(weight) {
   return map(weight, 0.0, 1.0, 0, 255);
 }
 
-function rgbToLuma(red, green, blue) // Approximate Luma value from RGB values, rough approximation (takes values of 0-255 and returns same range).
-// Where:
-// _r -> red channel
-// _g -> green channel
-// _b -> blue channel
-{
+function rgbToLuma(red, green, blue) {
   return red + red + red + blue + green + green + green + green >> 3;
 }
 
-function plotInCircle(input, centerX, centerY, radius) // Returns a 2-value Tuple containing positive and negative Y values of a desired circle.
-// NOTE: Avoid use if possible (function uses sqrt).
-// Where:
-// _x -> x value to apply f(x)
-// _centerX, _centerY -> center of desired circle
-// _r -> radius of desired circle
-{
+function plotInCircle(input, centerX, centerY, radius) {
   var posY = plotCircleTop(input, centerX, centerY, radius);
   var negY = posY * -1 + centerY * 2;
   return {
@@ -28966,58 +28968,436 @@ function plotInCircle(input, centerX, centerY, radius) // Returns a 2-value Tupl
   };
 }
 
-function plotCircleTop(input, centerX, centerY, radius) // Returns the positive Y value corresponding to a given X of a desired circle.
-// NOTE: Avoid use if possible (function uses sqrt).
-// Where:
-// _x -> x value to apply f(x)
-// _centerX, _centerY -> center of desired circle
-// _r -> radius of desired circle
-{
+function plotCircleTop(input, centerX, centerY, radius) {
   return Math.round(Math.sqrt(Math.pow(radius, 2) - Math.pow(input - centerX, 2))) + centerY;
 }
 
-function plotCircleBottom(input, centerX, centerY, radius) // Returns the negative Y value corresponding to a given X of a desired circle.
-// NOTE: Avoid use if possible (function uses sqrt).
-// Where:
-// _x -> x value to apply f(x)
-// _centerX, _centerY -> center of desired circle
-// _r -> radius of desired circle
-{
+function plotCircleBottom(input, centerX, centerY, radius) {
   return plotCircleTop(input, centerX, centerY, radius) * -1;
 }
 
-function sinMap(input, frequency, shift) // A sin function, returns a value between 1 and -1.
-// Where:
-// _x -> input value to map
-// _amp -> amplitude of function
-// _freq -> frequency of function
-// _shift -> x-axis shift of function
-{
+function sinMap(input, frequency, shift) {
   return Math.sin(frequency * input - frequency * shift);
 }
 
-function easeInOutCubic(input, begin, change, duration) // Maps an x value to a y value using an in-out-cubic easing function
-// Adapted from Robert Penner's Easing Functions
-// Where:
-// _x -> x value to map
-// _begin -> beginning value
-// _change -> change in value
-// _duration -> duration or extent of function
-{
+function easeInOutCubic(input, begin, change, duration) {
   if ((input /= duration / 2) < 1) return change / 2 * Math.pow(input, 3) + begin;
   return change / 2 * ((input -= 2) * input * input + 2) + begin;
 }
-},{}],"pgriddy/getters.js":[function(require,module,exports) {
+
+var attrOrDefault = function attrOrDefault(paramObj, paramAttr, alt) {
+  if (paramObj) {
+    return paramObj.hasOwnProperty(paramAttr) ? paramObj[paramAttr] : alt;
+  } else {
+    return alt;
+  }
+};
+
+exports.attrOrDefault = attrOrDefault;
+
+var forEachPoint = function forEachPoint(points, fun) {
+  for (var i = 0, n = points.length; i < n; i++) {
+    fun(points[i], i);
+  }
+
+  return points;
+};
+
+exports.forEachPoint = forEachPoint;
+},{}],"pgriddy/noise.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getThreshold = exports.getPGPerlin = exports.getPGRandom = exports.getPGThreshold = exports.getPGPattern = exports.getPGCircle = exports.getPGLineNotOpped = exports.getPGLine = exports.getPGOppositePointHor = exports.getPGOppositePointVert = exports.getPGOppositePoint = exports.getPGRowByIndex = exports.getPGColumnByIndex = exports.getPGPointSafe = exports.getPGPoint = void 0;
+exports.noise = exports.default = void 0;
+
+/*
+ * A speed-improved perlin and simplex noise algorithms for 2D.
+ *
+ * Based on example code by Stefan Gustavson (stegu@itn.liu.se).
+ * Optimisations by Peter Eastman (peastman@drizzle.stanford.edu).
+ * Better rank ordering method by Stefan Gustavson in 2012.
+ * Converted to Javascript by Joseph Gentle.
+ *
+ * Version 2012-03-09
+ *
+ * This code was placed in the public domain by its original author,
+ * Stefan Gustavson. You may use it as you see fit, but
+ * attribution is appreciated.
+ *
+ * Refactored into ES6 Module pattern & ts by Nikolai Kozak.
+ *
+ * 2021-06-14
+ */
+// ##### Perlin noise stuff
+var fade = function fade(t) {
+  return t * t * t * (t * (t * 6 - 15) + 10);
+};
+/* Perlin did not seem to be working with this version of lerp
+const lerp1 = (a, b, t) =>
+{
+  return (1-t)*a + t*b;
+}
+*/
+
+
+var lerp = function lerp(t, a, b) {
+  return a + t * (b - a);
+};
+
+var Grad =
+/** @class */
+function () {
+  function Grad(x, y, z) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+  }
+
+  Grad.prototype.dot2 = function (x, y) {
+    return this.x * x + this.y * y;
+  };
+
+  ;
+
+  Grad.prototype.dot3 = function (x, y, z) {
+    return this.x * x + this.y * y + this.z * z;
+  };
+
+  ;
+  return Grad;
+}(); // Skewing and unskewing factors for 2, 3, and 4 dimensions
+
+
+var F2 = 0.5 * (Math.sqrt(3) - 1);
+var G2 = (3 - Math.sqrt(3)) / 6;
+var F3 = 1 / 3;
+var G3 = 1 / 6;
+
+var Noise =
+/** @class */
+function () {
+  function Noise() {
+    this.perm = new Array(512);
+    this.gradP = new Array(512);
+    this.grad3 = [new Grad(1, 1, 0), new Grad(-1, 1, 0), new Grad(1, -1, 0), new Grad(-1, -1, 0), new Grad(1, 0, 1), new Grad(-1, 0, 1), new Grad(1, 0, -1), new Grad(-1, 0, -1), new Grad(0, 1, 1), new Grad(0, -1, 1), new Grad(0, 1, -1), new Grad(0, -1, -1)];
+    this.p = [151, 160, 137, 91, 90, 15, 131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23, 190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33, 88, 237, 149, 56, 87, 174, 20, 125, 136, 171, 168, 68, 175, 74, 165, 71, 134, 139, 48, 27, 166, 77, 146, 158, 231, 83, 111, 229, 122, 60, 211, 133, 230, 220, 105, 92, 41, 55, 46, 245, 40, 244, 102, 143, 54, 65, 25, 63, 161, 1, 216, 80, 73, 209, 76, 132, 187, 208, 89, 18, 169, 200, 196, 135, 130, 116, 188, 159, 86, 164, 100, 109, 198, 173, 186, 3, 64, 52, 217, 226, 250, 124, 123, 5, 202, 38, 147, 118, 126, 255, 82, 85, 212, 207, 206, 59, 227, 47, 16, 58, 17, 182, 189, 28, 42, 223, 183, 170, 213, 119, 248, 152, 2, 44, 154, 163, 70, 221, 153, 101, 155, 167, 43, 172, 9, 129, 22, 39, 253, 19, 98, 108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228, 251, 34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235, 249, 14, 239, 107, 49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254, 138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180];
+    this.seed(0);
+  }
+
+  Noise.prototype.seed = function (seed) {
+    if (seed > 0 && seed < 1) {
+      // Scale the seed out
+      seed *= 65536;
+    }
+
+    seed = Math.floor(seed);
+
+    if (seed < 256) {
+      seed |= seed << 8;
+    }
+
+    for (var i = 0; i < 256; i++) {
+      var v = void 0;
+
+      if (i & 1) {
+        v = this.p[i] ^ seed & 255;
+      } else {
+        v = this.p[i] ^ seed >> 8 & 255;
+      }
+
+      this.perm[i] = this.perm[i + 256] = v;
+      this.gradP[i] = this.gradP[i + 256] = this.grad3[v % 12];
+    }
+  };
+
+  ; // 2D simplex noise
+
+  Noise.prototype.simplex2 = function (xin, yin) {
+    var n0, n1, n2; // Noise contributions from the three corners
+    // Skew the input space to determine which simplex cell we're in
+
+    var s = (xin + yin) * F2; // Hairy factor for 2D
+
+    var i = Math.floor(xin + s);
+    var j = Math.floor(yin + s);
+    var t = (i + j) * G2;
+    var x0 = xin - i + t; // The x,y distances from the cell origin, unskewed.
+
+    var y0 = yin - j + t; // For the 2D case, the simplex shape is an equilateral triangle.
+    // Determine which simplex we are in.
+
+    var i1, j1; // Offsets for second (middle) corner of simplex in (i,j) coords
+
+    if (x0 > y0) {
+      // lower triangle, XY order: (0,0)->(1,0)->(1,1)
+      i1 = 1;
+      j1 = 0;
+    } else {
+      // upper triangle, YX order: (0,0)->(0,1)->(1,1)
+      i1 = 0;
+      j1 = 1;
+    } // A step of (1,0) in (i,j) means a step of (1-c,-c) in (x,y), and
+    // a step of (0,1) in (i,j) means a step of (-c,1-c) in (x,y), where
+    // c = (3-sqrt(3))/6
+
+
+    var x1 = x0 - i1 + G2; // Offsets for middle corner in (x,y) unskewed coords
+
+    var y1 = y0 - j1 + G2;
+    var x2 = x0 - 1 + 2 * G2; // Offsets for last corner in (x,y) unskewed coords
+
+    var y2 = y0 - 1 + 2 * G2; // Work out the hashed gradient indices of the three simplex corners
+
+    i &= 255;
+    j &= 255;
+    var gi0 = this.gradP[i + this.perm[j]];
+    var gi1 = this.gradP[i + i1 + this.perm[j + j1]];
+    var gi2 = this.gradP[i + 1 + this.perm[j + 1]]; // Calculate the contribution from the three corners
+
+    var t0 = 0.5 - x0 * x0 - y0 * y0;
+
+    if (t0 < 0) {
+      n0 = 0;
+    } else {
+      t0 *= t0;
+      n0 = t0 * t0 * gi0.dot2(x0, y0); // (x,y) of grad3 used for 2D gradient
+    }
+
+    var t1 = 0.5 - x1 * x1 - y1 * y1;
+
+    if (t1 < 0) {
+      n1 = 0;
+    } else {
+      t1 *= t1;
+      n1 = t1 * t1 * gi1.dot2(x1, y1);
+    }
+
+    var t2 = 0.5 - x2 * x2 - y2 * y2;
+
+    if (t2 < 0) {
+      n2 = 0;
+    } else {
+      t2 *= t2;
+      n2 = t2 * t2 * gi2.dot2(x2, y2);
+    } // Add contributions from each corner to get the final noise value.
+    // The result is scaled to return values in the interval [-1,1].
+
+
+    return 70 * (n0 + n1 + n2);
+  };
+
+  ; // 3D simplex noise
+
+  Noise.prototype.simplex3 = function (xin, yin, zin) {
+    var n0, n1, n2, n3; // Noise contributions from the four corners
+    // Skew the input space to determine which simplex cell we're in
+
+    var s = (xin + yin + zin) * F3; // Hairy factor for 2D
+
+    var i = Math.floor(xin + s);
+    var j = Math.floor(yin + s);
+    var k = Math.floor(zin + s);
+    var t = (i + j + k) * G3;
+    var x0 = xin - i + t; // The x,y distances from the cell origin, unskewed.
+
+    var y0 = yin - j + t;
+    var z0 = zin - k + t; // For the 3D case, the simplex shape is a slightly irregular tetrahedron.
+    // Determine which simplex we are in.
+
+    var i1, j1, k1; // Offsets for second corner of simplex in (i,j,k) coords
+
+    var i2, j2, k2; // Offsets for third corner of simplex in (i,j,k) coords
+
+    if (x0 >= y0) {
+      if (y0 >= z0) {
+        i1 = 1;
+        j1 = 0;
+        k1 = 0;
+        i2 = 1;
+        j2 = 1;
+        k2 = 0;
+      } else if (x0 >= z0) {
+        i1 = 1;
+        j1 = 0;
+        k1 = 0;
+        i2 = 1;
+        j2 = 0;
+        k2 = 1;
+      } else {
+        i1 = 0;
+        j1 = 0;
+        k1 = 1;
+        i2 = 1;
+        j2 = 0;
+        k2 = 1;
+      }
+    } else {
+      if (y0 < z0) {
+        i1 = 0;
+        j1 = 0;
+        k1 = 1;
+        i2 = 0;
+        j2 = 1;
+        k2 = 1;
+      } else if (x0 < z0) {
+        i1 = 0;
+        j1 = 1;
+        k1 = 0;
+        i2 = 0;
+        j2 = 1;
+        k2 = 1;
+      } else {
+        i1 = 0;
+        j1 = 1;
+        k1 = 0;
+        i2 = 1;
+        j2 = 1;
+        k2 = 0;
+      }
+    } // A step of (1,0,0) in (i,j,k) means a step of (1-c,-c,-c) in (x,y,z),
+    // a step of (0,1,0) in (i,j,k) means a step of (-c,1-c,-c) in (x,y,z), and
+    // a step of (0,0,1) in (i,j,k) means a step of (-c,-c,1-c) in (x,y,z), where
+    // c = 1/6.
+
+
+    var x1 = x0 - i1 + G3; // Offsets for second corner
+
+    var y1 = y0 - j1 + G3;
+    var z1 = z0 - k1 + G3;
+    var x2 = x0 - i2 + 2 * G3; // Offsets for third corner
+
+    var y2 = y0 - j2 + 2 * G3;
+    var z2 = z0 - k2 + 2 * G3;
+    var x3 = x0 - 1 + 3 * G3; // Offsets for fourth corner
+
+    var y3 = y0 - 1 + 3 * G3;
+    var z3 = z0 - 1 + 3 * G3; // Work out the hashed gradient indices of the four simplex corners
+
+    i &= 255;
+    j &= 255;
+    k &= 255;
+    var gi0 = this.gradP[i + this.perm[j + this.perm[k]]];
+    var gi1 = this.gradP[i + i1 + this.perm[j + j1 + this.perm[k + k1]]];
+    var gi2 = this.gradP[i + i2 + this.perm[j + j2 + this.perm[k + k2]]];
+    var gi3 = this.gradP[i + 1 + this.perm[j + 1 + this.perm[k + 1]]]; // Calculate the contribution from the four corners
+
+    var t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0;
+
+    if (t0 < 0) {
+      n0 = 0;
+    } else {
+      t0 *= t0;
+      n0 = t0 * t0 * gi0.dot3(x0, y0, z0); // (x,y) of grad3 used for 2D gradient
+    }
+
+    var t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1;
+
+    if (t1 < 0) {
+      n1 = 0;
+    } else {
+      t1 *= t1;
+      n1 = t1 * t1 * gi1.dot3(x1, y1, z1);
+    }
+
+    var t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2;
+
+    if (t2 < 0) {
+      n2 = 0;
+    } else {
+      t2 *= t2;
+      n2 = t2 * t2 * gi2.dot3(x2, y2, z2);
+    }
+
+    var t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3;
+
+    if (t3 < 0) {
+      n3 = 0;
+    } else {
+      t3 *= t3;
+      n3 = t3 * t3 * gi3.dot3(x3, y3, z3);
+    } // Add contributions from each corner to get the final noise value.
+    // The result is scaled to return values in the interval [-1,1].
+
+
+    return 32 * (n0 + n1 + n2 + n3);
+  };
+
+  ; // 2D Perlin Noise
+
+  Noise.prototype.perlin2 = function (x, y) {
+    // Find unit grid cell containing point
+    var X = Math.floor(x),
+        Y = Math.floor(y); // Get relative xy coordinates of point within that cell
+
+    x = x - X;
+    y = y - Y; // Wrap the integer cells at 255 (smaller integer period can be introduced here)
+
+    X = X & 255;
+    Y = Y & 255; // Calculate noise contributions from each of the four corners
+
+    var n00 = this.gradP[X + this.perm[Y]].dot2(x, y);
+    var n01 = this.gradP[X + this.perm[Y + 1]].dot2(x, y - 1);
+    var n10 = this.gradP[X + 1 + this.perm[Y]].dot2(x - 1, y);
+    var n11 = this.gradP[X + 1 + this.perm[Y + 1]].dot2(x - 1, y - 1); // Compute the fade curve value for x
+
+    var u = fade(x); // Interpolate the four results
+
+    return lerp(fade(y), lerp(n00, n10, u), lerp(n01, n11, u));
+  };
+
+  ; // 3D Perlin Noise
+
+  Noise.prototype.perlin3 = function (x, y, z) {
+    // Find unit grid cell containing point
+    var X = Math.floor(x),
+        Y = Math.floor(y),
+        Z = Math.floor(z); // Get relative xyz coordinates of point within that cell
+
+    x = x - X;
+    y = y - Y;
+    z = z - Z; // Wrap the integer cells at 255 (smaller integer period can be introduced here)
+
+    X = X & 255;
+    Y = Y & 255;
+    Z = Z & 255; // Calculate noise contributions from each of the eight corners
+
+    var n000 = this.gradP[X + this.perm[Y + this.perm[Z]]].dot3(x, y, z);
+    var n001 = this.gradP[X + this.perm[Y + this.perm[Z + 1]]].dot3(x, y, z - 1);
+    var n010 = this.gradP[X + this.perm[Y + 1 + this.perm[Z]]].dot3(x, y - 1, z);
+    var n011 = this.gradP[X + this.perm[Y + 1 + this.perm[Z + 1]]].dot3(x, y - 1, z - 1);
+    var n100 = this.gradP[X + 1 + this.perm[Y + this.perm[Z]]].dot3(x - 1, y, z);
+    var n101 = this.gradP[X + 1 + this.perm[Y + this.perm[Z + 1]]].dot3(x - 1, y, z - 1);
+    var n110 = this.gradP[X + 1 + this.perm[Y + 1 + this.perm[Z]]].dot3(x - 1, y - 1, z);
+    var n111 = this.gradP[X + 1 + this.perm[Y + 1 + this.perm[Z + 1]]].dot3(x - 1, y - 1, z - 1); // Compute the fade curve value for x, y, z
+
+    var u = fade(x);
+    var v = fade(y);
+    var w = fade(z); // Interpolate
+
+    return lerp(v, lerp(lerp(n000, n100, u), lerp(n001, n101, u), w), lerp(lerp(n010, n110, u), lerp(n011, n111, u), w));
+  };
+
+  ;
+  return Noise;
+}();
+
+var _default = Noise;
+exports.default = _default;
+var noise = new Noise();
+exports.noise = noise;
+},{}],"pgriddy/getters.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getThreshold = exports.getSimplex = exports.getPerlin = exports.getRandom = exports.getPGPattern = exports.getPGCircle = exports.getPGLineNotOpped = exports.getPGLine = exports.getPGOppositePointHor = exports.getPGOppositePointVert = exports.getPGOppositePoint = exports.getPGRowByIndex = exports.getPGColumnByIndex = exports.getPGPointSafe = exports.getPGPoint = void 0;
 
 var _utilities = require("./utilities");
 
-var _point_grid = require("./point_grid");
+var _noise = require("./noise");
 
 // VARIOUS GETTER FUNCTIONS FOR CLASSES
 
@@ -29026,10 +29406,7 @@ var _point_grid = require("./point_grid");
 /************ POINTGRID GETTERS *****************/
 
 /************************************************/
-var getPGPoint = function getPGPoint(pointGrid) // Fetches a GridPoint from a PointGrid.
-// column -> column of the desired point.
-// row -> row of the desired point.
-{
+var getPGPoint = function getPGPoint(pointGrid) {
   return function (column, row) {
     column = Math.min(column, pointGrid.numX);
     row = Math.min(row, pointGrid.numY);
@@ -29039,15 +29416,10 @@ var getPGPoint = function getPGPoint(pointGrid) // Fetches a GridPoint from a Po
 
 exports.getPGPoint = getPGPoint;
 
-var getPGPointSafe = function getPGPointSafe(pointGrid) // Fetches a GridPoint from a PointGrid,
-// throwing an Error if the input parameters are
-// out of bounds.
-// column -> column of the desired point.
-// row -> row of the desired point.
-{
+var getPGPointSafe = function getPGPointSafe(pointGrid) {
   return function (column, row) {
     if (column > pointGrid.numX - 1 || row > pointGrid.numY - 1 || column < 0 || row < 0) {
-      throw "UNSAFE_POINT";
+      throw new RangeError("Point not in grid!");
     } else {
       return (0, _utilities.arraySelector)(column, row, pointGrid.numX, pointGrid.points);
     }
@@ -29056,9 +29428,7 @@ var getPGPointSafe = function getPGPointSafe(pointGrid) // Fetches a GridPoint f
 
 exports.getPGPointSafe = getPGPointSafe;
 
-var getPGColumnByIndex = function getPGColumnByIndex(pointGrid) // Fetches a column of GridPoints from a PointGrid
-// index -> the index of the desired column.
-{
+var getPGColumnByIndex = function getPGColumnByIndex(pointGrid) {
   return function (index) {
     var result = [];
 
@@ -29072,9 +29442,7 @@ var getPGColumnByIndex = function getPGColumnByIndex(pointGrid) // Fetches a col
 
 exports.getPGColumnByIndex = getPGColumnByIndex;
 
-var getPGRowByIndex = function getPGRowByIndex(pointGrid) // Fetches a row of GridPoints from a PointGrid
-// index -> the index of the desired row.
-{
+var getPGRowByIndex = function getPGRowByIndex(pointGrid) {
   return function (index) {
     var result = [];
 
@@ -29088,10 +29456,7 @@ var getPGRowByIndex = function getPGRowByIndex(pointGrid) // Fetches a row of Gr
 
 exports.getPGRowByIndex = getPGRowByIndex;
 
-var getPGOppositePoint = function getPGOppositePoint(pointGrid) // Fetches a vertically and horizontally symmetrical GridPoint based on a source GridPoint (defined by a column and a row coordinate).
-// column -> column index of source point
-// row -> row index of source point
-{
+var getPGOppositePoint = function getPGOppositePoint(pointGrid) {
   return function (column, row) {
     var gridWidth = pointGrid.numX - 1;
     var gridHeight = pointGrid.numY - 1;
@@ -29103,11 +29468,7 @@ var getPGOppositePoint = function getPGOppositePoint(pointGrid) // Fetches a ver
 
 exports.getPGOppositePoint = getPGOppositePoint;
 
-var getPGOppositePointVert = function getPGOppositePointVert(pointGrid) // Fetches a vertically symmetrical POINT based on a source POINT and POINT_GRID
-// Where:
-// column -> column index of source point
-// row -> row index of source point
-{
+var getPGOppositePointVert = function getPGOppositePointVert(pointGrid) {
   return function (column, row) {
     var gridHeight = pointGrid.numY - 1;
     var oppositeY = gridHeight - row;
@@ -29117,7 +29478,7 @@ var getPGOppositePointVert = function getPGOppositePointVert(pointGrid) // Fetch
 
 exports.getPGOppositePointVert = getPGOppositePointVert;
 
-var getPGOppositePointHor = function getPGOppositePointHor(column, row, pointGrid) {
+var getPGOppositePointHor = function getPGOppositePointHor(pointGrid) {
   // Fetches a horizontally symmetrical POINT based on a source POINT and POINT_GRID
   // Where:
   // column -> column index of source point
@@ -29131,12 +29492,7 @@ var getPGOppositePointHor = function getPGOppositePointHor(column, row, pointGri
 
 exports.getPGOppositePointHor = getPGOppositePointHor;
 
-var getPGLine = function getPGLine(pointGrid) // fetches points on grid according to line given by (columnStart, rowStart), (columnEnd, rowEnd)
-// uses modified rasterizing algorithm by Alois Zingl (http://members.chello.at/~easyfilter/Bresenham.pdf)
-// Where:
-// columnStart, rowStart -> start point of line (by col and row index of POINT_GRID)
-// columnEnd, rowEnd -> end point of line (by col and row index of POINT_GRID)
-{
+var getPGLine = function getPGLine(pointGrid) {
   return function (columnStart, rowStart, columnEnd, rowEnd) {
     var result = [];
     var dx = Math.abs(columnEnd - columnStart);
@@ -29154,7 +29510,7 @@ var getPGLine = function getPGLine(pointGrid) // fetches points on grid accordin
       e2 = err * 2;
 
       if (e2 >= dy) {
-        if (columnStart == columnEnd) ;
+        if (columnStart == columnEnd) break;
         err += dy;
         columnStart += sx;
       }
@@ -29172,12 +29528,7 @@ var getPGLine = function getPGLine(pointGrid) // fetches points on grid accordin
 
 exports.getPGLine = getPGLine;
 
-var getPGLineNotOpped = function getPGLineNotOpped(pointGrid) // fetches points on grid according to line given by (columnStart, rowStart), (columnEnd, rowEnd)
-// instead of an optimized algorithm, uses a non-optimized slope-intercept based method.
-// Where:
-// columnStart, rowStart -> start point of line (by col and row index of POINT_GRID)
-// columnEnd, rowEnd -> end point of line (by col and row index of POINT_GRID)
-{
+var getPGLineNotOpped = function getPGLineNotOpped(pointGrid) {
   return function (columnStart, rowStart, columnEnd, rowEnd) {
     var result = [];
     var dir = columnStart < columnEnd;
@@ -29200,12 +29551,7 @@ var getPGLineNotOpped = function getPGLineNotOpped(pointGrid) // fetches points 
 
 exports.getPGLineNotOpped = getPGLineNotOpped;
 
-var getPGCircle = function getPGCircle(pointGrid) // fetches points on grid according to circle with center (column, row) and radius (radius)
-// uses modified rasterizing algorithm by Alois Zingl (http://members.chello.at/~easyfilter/Bresenham.pdf)
-// Where:
-// column, row -> center of circle
-// radius -> radius of circle
-{
+var getPGCircle = function getPGCircle(pointGrid) {
   return function (column, row, radius) {
     var result = [];
     var x = -radius;
@@ -29249,15 +29595,12 @@ var getPGCircle = function getPGCircle(pointGrid) // fetches points on grid acco
 
 exports.getPGCircle = getPGCircle;
 
-var getPGPattern = function getPGPattern(pointGrid) // fetches points according to a list of directions (explained below) for a certain number of iterations
-//
-// column, row -> origin of pattern
-// directionList -> list of steps to take, where: 0:top, 1:top-right, 2:right, 3:bottom-right, etc.
-// repetitions -> number of steps to take (from 0, where none are taken, to ...)
-// overflow -> allow for pattern to wrap around edges (if a similar point is found, pattern will break regardless of reps)
-{
-  return function (column, row, directionList, repetitions) {
-    var overflow = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
+var getPGPattern = function getPGPattern(pointGrid) {
+  return function (column, row, directionList, repetitions, overflow) {
+    if (overflow === void 0) {
+      overflow = false;
+    }
+
     var tempResult = new Set(); // Consider just checking ArrayList for duplicates
 
     var currentPoint = Object.assign({}, pointGrid.getPoint(column, row));
@@ -29266,8 +29609,8 @@ var getPGPattern = function getPGPattern(pointGrid) // fetches points according 
     var mod = directionList.length;
 
     while (step < repetitions) {
-      if (tempResult.contains(currentPoint) || currentPoint == null) break;
-      tempResult.push(Object.assign({}, currentPoint)); //new Grid_Point(currentPoint));
+      if (tempResult.has(currentPoint) || currentPoint == null) break;
+      tempResult.add(Object.assign({}, currentPoint)); //new Grid_Point(currentPoint));
 
       pointer = step % mod; //print(directionList.get(pointer));
 
@@ -29314,462 +29657,81 @@ var getPGPattern = function getPGPattern(pointGrid) // fetches points according 
 
 exports.getPGPattern = getPGPattern;
 
-var getPGThreshold = function getPGThreshold(pointGrid) // retrieves GridPoints whose weight is > low and < high.
-// low: bottom cutoff for weight
-// high: top cutoff for weight
-// pointGrid: grid to sample from
-{
+var getRandom = function getRandom(points) {
   return function (low, high) {
-    return getThreshold(low, high, pointGrid.points);
+    var result = [];
+    (0, _utilities.forEachPoint)(points, function (point, _index) {
+      var rand = Math.random();
+
+      if (rand >= low && rand <= high) {
+        result.push(point);
+      }
+    });
+    return result;
   };
 };
 
-exports.getPGThreshold = getPGThreshold;
+exports.getRandom = getRandom;
 
-var getPGRandom = function getPGRandom(pointGrid) // Returns a selection of points based on a random application of
-// weights onto GridPoints in a given PointGrid, and a threshold to select from
-// Where:
-// low: bottom cutoff for weight
-// high: top cutoff for weight
-{
-  return function (low, high) {
-    var modGrid = _point_grid.PointGrid.clone(pointGrid);
-
-    modGrid.applyRandom(false);
-    return modGrid.getThreshold(low, high);
-  };
-};
-
-exports.getPGRandom = getPGRandom;
-
-var getPGPerlin = function getPGPerlin(pointGrid) // Returns a selection of points based on an application of perlin noise
-// weights onto GridPoints in a given PointGrid, and a threshold to select from
-// low: bottom cutoff for weight
-// high: top cutoff for weight
-{
-  return function (low, high) {
-    var modGrid = _point_grid.PointGrid.clone(pointGrid);
-
-    modGrid.applyPerlin(0, 1, 0, false);
-    return modGrid.getThreshold(low, high);
-  };
-};
-
-exports.getPGPerlin = getPGPerlin;
-
-var getThreshold = function getThreshold(low, high, pointArray) // retrieves GridPoints whose weight is > low and < high.
-// low: bottom cutoff for weight
-// high: top cutoff for weight
-// pointGrid: grid to sample from
-{
-  var result = [];
-
-  for (var i = 0; i < pointArray.length; i++) {
-    if (pointArray[i].weight > low && pointArray[i].weight < high) {
-      result.push(pointArray[i]);
+var getPerlin = function getPerlin(points) {
+  return function (low, high, time) {
+    if (time === void 0) {
+      time = 0;
     }
-  }
 
-  return result;
+    var result = [];
+    (0, _utilities.forEachPoint)(points, function (point, _index) {
+      var perlin = _noise.noise.perlin3(point.x, point.y, time);
+
+      if (perlin >= low && perlin <= high) {
+        result.push(point);
+      }
+    });
+    return result;
+  };
+};
+
+exports.getPerlin = getPerlin;
+
+var getSimplex = function getSimplex(points) {
+  return function (low, high, time) {
+    if (time === void 0) {
+      time = 0;
+    }
+
+    var result = [];
+    (0, _utilities.forEachPoint)(points, function (point, _index) {
+      var simplex = _noise.noise.simplex3(point.x, point.y, time);
+
+      if (simplex >= low && simplex <= high) {
+        result.push(point);
+      }
+    });
+    return result;
+  };
+};
+
+exports.getSimplex = getSimplex;
+
+var getThreshold = function getThreshold(points) {
+  // retrieves Points whose weight is > low and < high.
+  // low: bottom cutoff for weight
+  // high: top cutoff for weight
+  return function (low, high) {
+    var result = [];
+
+    for (var i = 0; i < points.length; i++) {
+      if (points[i].weight > low && points[i].weight < high) {
+        result.push(points[i]);
+      }
+    }
+
+    return result;
+  };
 };
 
 exports.getThreshold = getThreshold;
-},{"./utilities":"pgriddy/utilities.js","./point_grid":"pgriddy/point_grid.js"}],"pgriddy/noise.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.noise = exports.default = void 0;
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-/*
- * A speed-improved perlin and simplex noise algorithms for 2D.
- *
- * Based on example code by Stefan Gustavson (stegu@itn.liu.se).
- * Optimisations by Peter Eastman (peastman@drizzle.stanford.edu).
- * Better rank ordering method by Stefan Gustavson in 2012.
- * Converted to Javascript by Joseph Gentle.
- *
- * Version 2012-03-09
- *
- * This code was placed in the public domain by its original author,
- * Stefan Gustavson. You may use it as you see fit, but
- * attribution is appreciated.
- *
- * Refactored into ES6 Module pattern by Nikolai Kozak.
- *
- * 2021-06-14
- */
-// ##### Perlin noise stuff
-var fade = function fade(t) {
-  return t * t * t * (t * (t * 6 - 15) + 10);
-};
-/* Perlin did not seem to be working with this version of lerp
-const lerp1 = (a, b, t) => 
-{
-  return (1-t)*a + t*b;
-}
-*/
-
-
-var lerp = function lerp(t, a, b) {
-  return a + t * (b - a);
-};
-
-var Grad = /*#__PURE__*/function () {
-  function Grad(x, y, z) {
-    _classCallCheck(this, Grad);
-
-    this.x = x;
-    this.y = y;
-    this.z = z;
-  }
-
-  _createClass(Grad, [{
-    key: "dot2",
-    value: function dot2(x, y) {
-      return this.x * x + this.y * y;
-    }
-  }, {
-    key: "dot3",
-    value: function dot3(x, y, z) {
-      return this.x * x + this.y * y + this.z * z;
-    }
-  }]);
-
-  return Grad;
-}(); // Skewing and unskewing factors for 2, 3, and 4 dimensions
-
-
-var F2 = 0.5 * (Math.sqrt(3) - 1);
-var G2 = (3 - Math.sqrt(3)) / 6;
-var F3 = 1 / 3;
-var G3 = 1 / 6;
-
-var Noise = /*#__PURE__*/function () {
-  function Noise() // To remove the need for index wrapping, double the permutation table length
-  {
-    _classCallCheck(this, Noise);
-
-    this.perm = new Array(512);
-    this.gradP = new Array(512);
-    this.grad3 = [new Grad(1, 1, 0), new Grad(-1, 1, 0), new Grad(1, -1, 0), new Grad(-1, -1, 0), new Grad(1, 0, 1), new Grad(-1, 0, 1), new Grad(1, 0, -1), new Grad(-1, 0, -1), new Grad(0, 1, 1), new Grad(0, -1, 1), new Grad(0, 1, -1), new Grad(0, -1, -1)];
-    this.p = [151, 160, 137, 91, 90, 15, 131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23, 190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33, 88, 237, 149, 56, 87, 174, 20, 125, 136, 171, 168, 68, 175, 74, 165, 71, 134, 139, 48, 27, 166, 77, 146, 158, 231, 83, 111, 229, 122, 60, 211, 133, 230, 220, 105, 92, 41, 55, 46, 245, 40, 244, 102, 143, 54, 65, 25, 63, 161, 1, 216, 80, 73, 209, 76, 132, 187, 208, 89, 18, 169, 200, 196, 135, 130, 116, 188, 159, 86, 164, 100, 109, 198, 173, 186, 3, 64, 52, 217, 226, 250, 124, 123, 5, 202, 38, 147, 118, 126, 255, 82, 85, 212, 207, 206, 59, 227, 47, 16, 58, 17, 182, 189, 28, 42, 223, 183, 170, 213, 119, 248, 152, 2, 44, 154, 163, 70, 221, 153, 101, 155, 167, 43, 172, 9, 129, 22, 39, 253, 19, 98, 108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228, 251, 34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235, 249, 14, 239, 107, 49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254, 138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180];
-    this.seed(0);
-  }
-
-  _createClass(Noise, [{
-    key: "seed",
-    value: function seed(_seed) // This isn't a very good seeding function, but it works ok. It supports 2^16
-    // different seed values. Write something better if you need more seeds.
-    // NOTE: Use 0-1 or 0-65536 as seed values.
-    {
-      if (_seed > 0 && _seed < 1) {
-        // Scale the seed out
-        _seed *= 65536;
-      }
-
-      _seed = Math.floor(_seed);
-
-      if (_seed < 256) {
-        _seed |= _seed << 8;
-      }
-
-      for (var i = 0; i < 256; i++) {
-        var v = void 0;
-
-        if (i & 1) {
-          v = this.p[i] ^ _seed & 255;
-        } else {
-          v = this.p[i] ^ _seed >> 8 & 255;
-        }
-
-        this.perm[i] = this.perm[i + 256] = v;
-        this.gradP[i] = this.gradP[i + 256] = this.grad3[v % 12];
-      }
-    }
-  }, {
-    key: "simplex2",
-    value: // 2D simplex noise
-    function simplex2(xin, yin) {
-      var n0, n1, n2; // Noise contributions from the three corners
-      // Skew the input space to determine which simplex cell we're in
-
-      var s = (xin + yin) * F2; // Hairy factor for 2D
-
-      var i = Math.floor(xin + s);
-      var j = Math.floor(yin + s);
-      var t = (i + j) * G2;
-      var x0 = xin - i + t; // The x,y distances from the cell origin, unskewed.
-
-      var y0 = yin - j + t; // For the 2D case, the simplex shape is an equilateral triangle.
-      // Determine which simplex we are in.
-
-      var i1, j1; // Offsets for second (middle) corner of simplex in (i,j) coords
-
-      if (x0 > y0) {
-        // lower triangle, XY order: (0,0)->(1,0)->(1,1)
-        i1 = 1;
-        j1 = 0;
-      } else {
-        // upper triangle, YX order: (0,0)->(0,1)->(1,1)
-        i1 = 0;
-        j1 = 1;
-      } // A step of (1,0) in (i,j) means a step of (1-c,-c) in (x,y), and
-      // a step of (0,1) in (i,j) means a step of (-c,1-c) in (x,y), where
-      // c = (3-sqrt(3))/6
-
-
-      var x1 = x0 - i1 + G2; // Offsets for middle corner in (x,y) unskewed coords
-
-      var y1 = y0 - j1 + G2;
-      var x2 = x0 - 1 + 2 * G2; // Offsets for last corner in (x,y) unskewed coords
-
-      var y2 = y0 - 1 + 2 * G2; // Work out the hashed gradient indices of the three simplex corners
-
-      i &= 255;
-      j &= 255;
-      var gi0 = this.gradP[i + this.perm[j]];
-      var gi1 = this.gradP[i + i1 + this.perm[j + j1]];
-      var gi2 = this.gradP[i + 1 + this.perm[j + 1]]; // Calculate the contribution from the three corners
-
-      var t0 = 0.5 - x0 * x0 - y0 * y0;
-
-      if (t0 < 0) {
-        n0 = 0;
-      } else {
-        t0 *= t0;
-        n0 = t0 * t0 * gi0.dot2(x0, y0); // (x,y) of grad3 used for 2D gradient
-      }
-
-      var t1 = 0.5 - x1 * x1 - y1 * y1;
-
-      if (t1 < 0) {
-        n1 = 0;
-      } else {
-        t1 *= t1;
-        n1 = t1 * t1 * gi1.dot2(x1, y1);
-      }
-
-      var t2 = 0.5 - x2 * x2 - y2 * y2;
-
-      if (t2 < 0) {
-        n2 = 0;
-      } else {
-        t2 *= t2;
-        n2 = t2 * t2 * gi2.dot2(x2, y2);
-      } // Add contributions from each corner to get the final noise value.
-      // The result is scaled to return values in the interval [-1,1].
-
-
-      return 70 * (n0 + n1 + n2);
-    }
-  }, {
-    key: "simplex3",
-    value: // 3D simplex noise
-    function simplex3(xin, yin, zin) {
-      var n0, n1, n2, n3; // Noise contributions from the four corners
-      // Skew the input space to determine which simplex cell we're in
-
-      var s = (xin + yin + zin) * F3; // Hairy factor for 2D
-
-      var i = Math.floor(xin + s);
-      var j = Math.floor(yin + s);
-      var k = Math.floor(zin + s);
-      var t = (i + j + k) * G3;
-      var x0 = xin - i + t; // The x,y distances from the cell origin, unskewed.
-
-      var y0 = yin - j + t;
-      var z0 = zin - k + t; // For the 3D case, the simplex shape is a slightly irregular tetrahedron.
-      // Determine which simplex we are in.
-
-      var i1, j1, k1; // Offsets for second corner of simplex in (i,j,k) coords
-
-      var i2, j2, k2; // Offsets for third corner of simplex in (i,j,k) coords
-
-      if (x0 >= y0) {
-        if (y0 >= z0) {
-          i1 = 1;
-          j1 = 0;
-          k1 = 0;
-          i2 = 1;
-          j2 = 1;
-          k2 = 0;
-        } else if (x0 >= z0) {
-          i1 = 1;
-          j1 = 0;
-          k1 = 0;
-          i2 = 1;
-          j2 = 0;
-          k2 = 1;
-        } else {
-          i1 = 0;
-          j1 = 0;
-          k1 = 1;
-          i2 = 1;
-          j2 = 0;
-          k2 = 1;
-        }
-      } else {
-        if (y0 < z0) {
-          i1 = 0;
-          j1 = 0;
-          k1 = 1;
-          i2 = 0;
-          j2 = 1;
-          k2 = 1;
-        } else if (x0 < z0) {
-          i1 = 0;
-          j1 = 1;
-          k1 = 0;
-          i2 = 0;
-          j2 = 1;
-          k2 = 1;
-        } else {
-          i1 = 0;
-          j1 = 1;
-          k1 = 0;
-          i2 = 1;
-          j2 = 1;
-          k2 = 0;
-        }
-      } // A step of (1,0,0) in (i,j,k) means a step of (1-c,-c,-c) in (x,y,z),
-      // a step of (0,1,0) in (i,j,k) means a step of (-c,1-c,-c) in (x,y,z), and
-      // a step of (0,0,1) in (i,j,k) means a step of (-c,-c,1-c) in (x,y,z), where
-      // c = 1/6.
-
-
-      var x1 = x0 - i1 + G3; // Offsets for second corner
-
-      var y1 = y0 - j1 + G3;
-      var z1 = z0 - k1 + G3;
-      var x2 = x0 - i2 + 2 * G3; // Offsets for third corner
-
-      var y2 = y0 - j2 + 2 * G3;
-      var z2 = z0 - k2 + 2 * G3;
-      var x3 = x0 - 1 + 3 * G3; // Offsets for fourth corner
-
-      var y3 = y0 - 1 + 3 * G3;
-      var z3 = z0 - 1 + 3 * G3; // Work out the hashed gradient indices of the four simplex corners
-
-      i &= 255;
-      j &= 255;
-      k &= 255;
-      var gi0 = this.gradP[i + this.perm[j + this.perm[k]]];
-      var gi1 = this.gradP[i + i1 + this.perm[j + j1 + this.perm[k + k1]]];
-      var gi2 = this.gradP[i + i2 + this.perm[j + j2 + this.perm[k + k2]]];
-      var gi3 = this.gradP[i + 1 + this.perm[j + 1 + this.perm[k + 1]]]; // Calculate the contribution from the four corners
-
-      var t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0;
-
-      if (t0 < 0) {
-        n0 = 0;
-      } else {
-        t0 *= t0;
-        n0 = t0 * t0 * gi0.dot3(x0, y0, z0); // (x,y) of grad3 used for 2D gradient
-      }
-
-      var t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1;
-
-      if (t1 < 0) {
-        n1 = 0;
-      } else {
-        t1 *= t1;
-        n1 = t1 * t1 * gi1.dot3(x1, y1, z1);
-      }
-
-      var t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2;
-
-      if (t2 < 0) {
-        n2 = 0;
-      } else {
-        t2 *= t2;
-        n2 = t2 * t2 * gi2.dot3(x2, y2, z2);
-      }
-
-      var t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3;
-
-      if (t3 < 0) {
-        n3 = 0;
-      } else {
-        t3 *= t3;
-        n3 = t3 * t3 * gi3.dot3(x3, y3, z3);
-      } // Add contributions from each corner to get the final noise value.
-      // The result is scaled to return values in the interval [-1,1].
-
-
-      return 32 * (n0 + n1 + n2 + n3);
-    }
-  }, {
-    key: "perlin2",
-    value: // 2D Perlin Noise
-    function perlin2(x, y) {
-      // Find unit grid cell containing point
-      var X = Math.floor(x),
-          Y = Math.floor(y); // Get relative xy coordinates of point within that cell
-
-      x = x - X;
-      y = y - Y; // Wrap the integer cells at 255 (smaller integer period can be introduced here)
-
-      X = X & 255;
-      Y = Y & 255; // Calculate noise contributions from each of the four corners
-
-      var n00 = this.gradP[X + this.perm[Y]].dot2(x, y);
-      var n01 = this.gradP[X + this.perm[Y + 1]].dot2(x, y - 1);
-      var n10 = this.gradP[X + 1 + this.perm[Y]].dot2(x - 1, y);
-      var n11 = this.gradP[X + 1 + this.perm[Y + 1]].dot2(x - 1, y - 1); // Compute the fade curve value for x
-
-      var u = fade(x); // Interpolate the four results
-
-      return lerp(fade(y), lerp(n00, n10, u), lerp(n01, n11, u));
-    }
-  }, {
-    key: "perlin3",
-    value: // 3D Perlin Noise
-    function perlin3(x, y, z) {
-      // Find unit grid cell containing point
-      var X = Math.floor(x),
-          Y = Math.floor(y),
-          Z = Math.floor(z); // Get relative xyz coordinates of point within that cell
-
-      x = x - X;
-      y = y - Y;
-      z = z - Z; // Wrap the integer cells at 255 (smaller integer period can be introduced here)
-
-      X = X & 255;
-      Y = Y & 255;
-      Z = Z & 255; // Calculate noise contributions from each of the eight corners
-
-      var n000 = this.gradP[X + this.perm[Y + this.perm[Z]]].dot3(x, y, z);
-      var n001 = this.gradP[X + this.perm[Y + this.perm[Z + 1]]].dot3(x, y, z - 1);
-      var n010 = this.gradP[X + this.perm[Y + 1 + this.perm[Z]]].dot3(x, y - 1, z);
-      var n011 = this.gradP[X + this.perm[Y + 1 + this.perm[Z + 1]]].dot3(x, y - 1, z - 1);
-      var n100 = this.gradP[X + 1 + this.perm[Y + this.perm[Z]]].dot3(x - 1, y, z);
-      var n101 = this.gradP[X + 1 + this.perm[Y + this.perm[Z + 1]]].dot3(x - 1, y, z - 1);
-      var n110 = this.gradP[X + 1 + this.perm[Y + 1 + this.perm[Z]]].dot3(x - 1, y - 1, z);
-      var n111 = this.gradP[X + 1 + this.perm[Y + 1 + this.perm[Z + 1]]].dot3(x - 1, y - 1, z - 1); // Compute the fade curve value for x, y, z
-
-      var u = fade(x);
-      var v = fade(y);
-      var w = fade(z); // Interpolate
-
-      return lerp(v, lerp(lerp(n000, n100, u), lerp(n001, n101, u), w), lerp(lerp(n010, n110, u), lerp(n011, n111, u), w));
-    }
-  }]);
-
-  return Noise;
-}();
-
-exports.default = Noise;
-var noise = new Noise();
-exports.noise = noise;
-},{}],"pgriddy/applicators.js":[function(require,module,exports) {
+},{"./utilities":"pgriddy/utilities.ts","./noise":"pgriddy/noise.ts"}],"pgriddy/applicators.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -29788,33 +29750,10 @@ var _noise = require("./noise");
 /************ GENERAL APPLICATORS ***************/
 
 /************************************************/
-var attrOrDefault = function attrOrDefault(paramObj, paramAttr, alt) // General helper for extracting options from a param object, 
-// and providing a default alternative if the param is null.
-{
-  if (paramObj) {
-    return paramObj.hasOwnProperty(paramAttr) ? paramObj[paramAttr] : alt;
-  } else {
-    return alt;
-  }
-};
-
-var forEachPoint = function forEachPoint(points, fun) // General helper for point iteration.
-// points -> points to iterate through
-// fun (point, index) -> function to affect points with
-{
-  for (var i = 0, n = points.length; i < n; i++) {
-    fun(points[i], i);
-  }
-
-  return points;
-};
-
-var setWeights = function setWeights(points) // Sets all weights in a given set of points
-// weight -> new weight (value between 0 and 1)
-{
+var setWeights = function setWeights(points) {
   return function (weight) {
     weight = (0, _utilities.clamp)(weight, 0, 1);
-    return forEachPoint(points, function (point, _i) {
+    return (0, _utilities.forEachPoint)(points, function (point, _i) {
       point.weight = weight;
     });
   };
@@ -29822,11 +29761,9 @@ var setWeights = function setWeights(points) // Sets all weights in a given set 
 
 exports.setWeights = setWeights;
 
-var addToWeights = function addToWeights(points) // Adds a given number to all weights in a given set of Points.
-// weight -> amount to add (value between 0 and 1)
-{
+var addToWeights = function addToWeights(points) {
   return function (weight) {
-    return forEachPoint(points, function (point, _i) {
+    return (0, _utilities.forEachPoint)(points, function (point, _i) {
       point.weight = (0, _utilities.clamp)(point.weight + weight, 0, 1);
     });
   };
@@ -29834,11 +29771,9 @@ var addToWeights = function addToWeights(points) // Adds a given number to all w
 
 exports.addToWeights = addToWeights;
 
-var multiplyWeights = function multiplyWeights(points) // Multiplies all weights in a given set of Points.
-// weight -> amount to add (value between 0 and 1)
-{
+var multiplyWeights = function multiplyWeights(points) {
   return function (weight) {
-    return forEachPoint(points, function (point, _i) {
+    return (0, _utilities.forEachPoint)(points, function (point, _i) {
       point.weight = (0, _utilities.clamp)(point.weight * weight, 0, 1);
     });
   };
@@ -29846,13 +29781,9 @@ var multiplyWeights = function multiplyWeights(points) // Multiplies all weights
 
 exports.multiplyWeights = multiplyWeights;
 
-var addToPositions = function addToPositions(points) // Moves points by adding the provided values to X and Y coordinates, scaled according to each point's weight.
-// Where:
-// x -> amount to add to Point.x
-// y -> amount to add to Point.y
-{
+var addToPositions = function addToPositions(points) {
   return function (x, y) {
-    return forEachPoint(points, function (point, _i) {
+    return (0, _utilities.forEachPoint)(points, function (point, _i) {
       point.x += x;
       point.y += y;
     });
@@ -29861,13 +29792,9 @@ var addToPositions = function addToPositions(points) // Moves points by adding t
 
 exports.addToPositions = addToPositions;
 
-var addToPositionsWeighted = function addToPositionsWeighted(points) // Moves points by adding the provided values to X and Y coordinates, scaled according to each point's weight.
-// Where:
-// x -> amount to add to Point.x
-// y -> amount to add to Point.y
-{
+var addToPositionsWeighted = function addToPositionsWeighted(points) {
   return function (x, y) {
-    return forEachPoint(points, function (point, _i) {
+    return (0, _utilities.forEachPoint)(points, function (point, _i) {
       point.x += x * point.weight;
       point.y += y * point.weight;
     });
@@ -29876,13 +29803,9 @@ var addToPositionsWeighted = function addToPositionsWeighted(points) // Moves po
 
 exports.addToPositionsWeighted = addToPositionsWeighted;
 
-var multPositions = function multPositions(points) // Moves points in a grid by multiplying the provided values to X and Y coordinates.
-// Where:
-// x -> amount to add to GRID_POINT.x
-// y -> amount to add to GRID_POINT.y
-{
+var multPositions = function multPositions(points) {
   return function (x, y) {
-    return forEachPoint(points, function (point, _i) {
+    return (0, _utilities.forEachPoint)(points, function (point, _i) {
       point.x *= x;
       point.y *= y;
     });
@@ -29891,13 +29814,9 @@ var multPositions = function multPositions(points) // Moves points in a grid by 
 
 exports.multPositions = multPositions;
 
-var multPositionsWeighted = function multPositionsWeighted(points) // Moves points in a grid by multiplying the provided values to X and Y coordinates, scaled according to each point's weight.
-// Where:
-// x -> amount to add to GRID_POINT.x
-// y -> amount to add to GRID_POINT.y
-{
+var multPositionsWeighted = function multPositionsWeighted(points) {
   return function (x, y) {
-    return forEachPoint(points, function (point, _i) {
+    return (0, _utilities.forEachPoint)(points, function (point, _i) {
       point.x *= x * point.weight;
       point.y *= y * point.weight;
     });
@@ -29927,15 +29846,7 @@ var applyPGLinRadGradientSlow = function applyPGLinRadGradientSlow(pointGrid) {
 
 exports.applyPGLinRadGradientSlow = applyPGLinRadGradientSlow;
 
-var applyPGLinRadGradient = function applyPGLinRadGradient(pointGrid) // Modifies weights of Grid_Points in a given Point_Grid according to a radial gradient, returns a new Point_Grid
-// uses modified rasterizing algorithm by Alois Zingl (http://members.chello.at/~easyfilter/Bresenham.pdf)
-// Where:
-// column, row -> origin of gradient
-// radius -> radius of gradient (i.e. extent of gradient effect)
-// initWeight -> initial weight value for gradient
-// inverse -> whether to invert the gradient
-// blend -> whether to add the gradient onto the previous Point_Grid or start anew
-{
+var applyPGLinRadGradient = function applyPGLinRadGradient(pointGrid) {
   var applicatorFn = makeRadialApplicator(function (context) {
     var decay = context.initWeight / context.radius;
     return context.inverse ? context.currWeight + decay : context.currWeight - decay;
@@ -29945,15 +29856,7 @@ var applyPGLinRadGradient = function applyPGLinRadGradient(pointGrid) // Modifie
 
 exports.applyPGLinRadGradient = applyPGLinRadGradient;
 
-var applyPGSmoothRadGradient = function applyPGSmoothRadGradient(pointGrid) // Modifies weights of Grid_Points in a given Point_Grid according to a radial gradient, using an in-out-easing function. Returns a new Point_Grid
-// uses modified rasterizing algorithm by Alois Zingl (http://members.chello.at/~easyfilter/Bresenham.pdf)
-// Where:
-// _col, _row -> origin of gradient
-// _rad -> radius of gradient (i.e. extent of gradient effect)
-// _init_weight -> initial weight value for gradient
-// _inverse -> whether to invert the gradient
-// _blend -> whether to add the gradient onto the previous Point_Grid or start anew
-{
+var applyPGSmoothRadGradient = function applyPGSmoothRadGradient(pointGrid) {
   var applicatorFn = makeRadialApplicator(function (context) {
     return (0, _utilities.easeInOutCubic)(context.currRad, context.inverse ? 0 : context.initWeight, context.inverse ? context.initWeight : context.initWeight * -1, context.radius);
   });
@@ -29981,18 +29884,10 @@ var applyPGSmoothRadGradientSlow = function applyPGSmoothRadGradientSlow(pointGr
 
 exports.applyPGSmoothRadGradientSlow = applyPGSmoothRadGradientSlow;
 
-var applyPGSinRadGradient = function applyPGSinRadGradient(pointGrid) // Modifies weights of Grid_Points in a given Point_Grid according to a radial gradient, using an in-out-easing function. Returns a new Point_Grid
-// uses modified rasterizing algorithm by Alois Zingl (http://members.chello.at/~easyfilter/Bresenham.pdf)
-// Where:
-// _col, _row -> origin of gradient
-// _rad -> radius of gradient (i.e. extent of gradient effect)
-// _init_weight -> initial weight value for gradient
-// _inverse -> whether to invert the gradient
-// _blend -> whether to add the gradient onto the previous Point_Grid or start anew
-{
+var applyPGSinRadGradient = function applyPGSinRadGradient(pointGrid) {
   var applicatorFn = makeRadialApplicator(function (context) {
-    var frequency = attrOrDefault(context.params, 'frequency', 1);
-    var shift = attrOrDefault(context.params, 'shift', 1);
+    var frequency = (0, _utilities.attrOrDefault)(context.params, 'frequency', 1);
+    var shift = (0, _utilities.attrOrDefault)(context.params, 'shift', 1);
     return (0, _utilities.sinMap)(context.currRad, frequency, shift);
   });
   return applicatorFn(pointGrid);
@@ -30013,8 +29908,8 @@ var applyPGSinRadGradientSlow = function applyPGSinRadGradientSlow(pointGrid) {
   // _blend -> whether to allow blending with previous weights (otherwise gradient overrides previous weights)
   var applicatorFn = makeSlowRadialApplicator(function (context) {
     // Freq and shift can be passed in as params to the final func.
-    var frequency = attrOrDefault(context.params, 'frequency', 1);
-    var shift = attrOrDefault(context.params, 'shift', 1);
+    var frequency = (0, _utilities.attrOrDefault)(context.params, 'frequency', 1);
+    var shift = (0, _utilities.attrOrDefault)(context.params, 'shift', 1);
     return (0, _utilities.sinMap)(context.currRad, frequency, shift);
   });
   return applicatorFn(pointGrid);
@@ -30022,21 +29917,14 @@ var applyPGSinRadGradientSlow = function applyPGSinRadGradientSlow(pointGrid) {
 
 exports.applyPGSinRadGradientSlow = applyPGSinRadGradientSlow;
 
-var applyPerlin = function applyPerlin(points) // Apply weights to point in Point_Grid based on Perlin Noise.
-// Perlin positions are taken from Grid_Points in Grid.
-// Where:
-// _min -> Min weight threshold
-// _max -> Max weight threshold
-// _time -> Time (Z-axis) factor for animating Perlin (takes values from 0.0 - 1.0);
-// _blend -> Whether to blend weight with any previous weight present in Point_Grid
-{
+var applyPerlin = function applyPerlin(points) {
   return function (params) {
-    var min = attrOrDefault(params, 'min', 0);
-    var max = attrOrDefault(params, 'max', 1);
-    var time = attrOrDefault(params, 'time', 0);
-    var blend = attrOrDefault(params, 'blend', false); //console.log(noise.perlin3(1, 1, 0));
+    var min = (0, _utilities.attrOrDefault)(params, 'min', 0);
+    var max = (0, _utilities.attrOrDefault)(params, 'max', 1);
+    var time = (0, _utilities.attrOrDefault)(params, 'time', 0);
+    var blend = (0, _utilities.attrOrDefault)(params, 'blend', false); //console.log(noise.perlin3(1, 1, 0));
 
-    return forEachPoint(points, function (point, _i) {
+    return (0, _utilities.forEachPoint)(points, function (point, _i) {
       //TODO: Figure out blending
       point.weight = (0, _utilities.map)(_noise.noise.perlin3(point.x, point.y, time), 0, 1, min, max);
     });
@@ -30045,20 +29933,13 @@ var applyPerlin = function applyPerlin(points) // Apply weights to point in Poin
 
 exports.applyPerlin = applyPerlin;
 
-var applySimplex = function applySimplex(points) // Apply weights to point in Point_Grid based on Perlin Noise.
-// Perlin positions are taken from Grid_Points in Grid.
-// Where:
-// _min -> Min weight threshold
-// _max -> Max weight threshold
-// _time -> Time (Z-axis) factor for animating Perlin (takes values from 0.0 - 1.0);
-// _blend -> Whether to blend weight with any previous weight present in Point_Grid
-{
+var applySimplex = function applySimplex(points) {
   return function (params) {
-    var min = attrOrDefault(params, 'min', 0);
-    var max = attrOrDefault(params, 'max', 1);
-    var time = attrOrDefault(params, 'time', 0);
-    var blend = attrOrDefault(params, 'blend', false);
-    return forEachPoint(points, function (point, _i) {
+    var min = (0, _utilities.attrOrDefault)(params, 'min', 0);
+    var max = (0, _utilities.attrOrDefault)(params, 'max', 1);
+    var time = (0, _utilities.attrOrDefault)(params, 'time', 0);
+    var blend = (0, _utilities.attrOrDefault)(params, 'blend', false);
+    return (0, _utilities.forEachPoint)(points, function (point, _i) {
       // TODO: Figure out blending
       point.weight = (0, _utilities.map)(_noise.noise.simplex3(point.x, point.y, time), 0, 1, min, max);
     });
@@ -30068,9 +29949,12 @@ var applySimplex = function applySimplex(points) // Apply weights to point in Po
 exports.applySimplex = applySimplex;
 
 var applyRandom = function applyRandom(points) {
-  return function () {
-    var blend = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-    return forEachPoint(points, function (point, _i) {
+  return function (blend) {
+    if (blend === void 0) {
+      blend = false;
+    }
+
+    return (0, _utilities.forEachPoint)(points, function (point, _i) {
       // TODO: bring in random function.
       point.weight = Math.random();
     });
@@ -30079,39 +29963,32 @@ var applyRandom = function applyRandom(points) {
 
 exports.applyRandom = applyRandom;
 
-var applyPGImage = function applyPGImage(pointGrid) // Loads an image and applies weights to Grid_Points in Point_Grid
-// based on R, G, B, L (lightness) values or combinations thereof.
-// Where:
-// _file -> filename of image to load
-// _scale -> scale the image to encompass full grid or load image at center of grid (no scale applied)
-// _mode -> any of the following: "r", "g", "b", "l" (luma)
-{
+var applyPGImage = function applyPGImage(pointGrid) {
   return function (params) {// TODO: Figure out how to bring in P5 sensibly as dependency.   
   };
 };
 
 exports.applyPGImage = applyPGImage;
 
-var makeSlowRadialApplicator = function makeSlowRadialApplicator(weightFn) // Factory for slow radial applicator functions. 
-// Takes a weight function which in turn receives all variables in the applicator builder function scope.
-// Returns a curried function that must then be curried again with again with a pointGrid.
-// Further variable declarations can be made in the weightFn declaration, using the context to fetch params for example.
-{
+var makeSlowRadialApplicator = function makeSlowRadialApplicator(weightFn) {
   return function (pointGrid) {
     return function (params) {
-      var column = attrOrDefault(params, 'column', 0);
-      var row = attrOrDefault(params, 'row', 0);
-      var radius = attrOrDefault(params, 'radius', 10);
-      var initWeight = attrOrDefault(params, 'initWeight', 1);
-      var sampleRate = attrOrDefault(params, 'sampleRate', 0.5);
-      var blend = attrOrDefault(params, 'blend', false);
-      var inverse = attrOrDefault(params, 'inverse', false);
+      var column = (0, _utilities.attrOrDefault)(params, 'column', 0);
+      var row = (0, _utilities.attrOrDefault)(params, 'row', 0);
+      var radius = (0, _utilities.attrOrDefault)(params, 'radius', 10);
+      var initWeight = (0, _utilities.attrOrDefault)(params, 'initWeight', 1);
+      var sampleRate = (0, _utilities.attrOrDefault)(params, 'sampleRate', 0.5);
+      var blend = (0, _utilities.attrOrDefault)(params, 'blend', false);
+      var inverse = (0, _utilities.attrOrDefault)(params, 'inverse', false);
       var currRad = 0;
       var initX = column - radius;
       var finX = column + radius;
       var currX = initX;
       var currWeight = initWeight;
-      var yVal = {};
+      var yVal = {
+        a: 0,
+        b: 0
+      };
 
       while (currRad <= radius) {
         while (currX <= finX) {
@@ -30123,9 +30000,8 @@ var makeSlowRadialApplicator = function makeSlowRadialApplicator(weightFn) // Fa
           }
 
           if (pointGrid.checkColBounds(currX) && pointGrid.checkRowBounds(yVal.b)) {
-            var _point = pointGrid.getPoint(currX, yVal.b);
-
-            _point.weight = blend ? (0, _utilities.clamp)(_point.weight + currWeight, 0, 1) : currWeight;
+            var point = pointGrid.getPoint(currX, yVal.b);
+            point.weight = blend ? (0, _utilities.clamp)(point.weight + currWeight, 0, 1) : currWeight;
           }
 
           currX++;
@@ -30157,23 +30033,15 @@ var makeSlowRadialApplicator = function makeSlowRadialApplicator(weightFn) // Fa
   };
 };
 
-var makeRadialApplicator = function makeRadialApplicator(weightFn) // Modifies weights of Grid_Points in a given Point_Grid according to a radial gradient, using an in-out-easing function. Returns a new Point_Grid
-// uses modified rasterizing algorithm by Alois Zingl (http://members.chello.at/~easyfilter/Bresenham.pdf)
-// Where:
-// _col, _row -> origin of gradient
-// _rad -> radius of gradient (i.e. extent of gradient effect)
-// _init_weight -> initial weight value for gradient
-// _inverse -> whether to invert the gradient
-// _blend -> whether to add the gradient onto the previous Point_Grid or start anew
-{
+var makeRadialApplicator = function makeRadialApplicator(weightFn) {
   return function (pointGrid) {
     return function (params) {
-      var column = attrOrDefault(params, 'column', 0);
-      var row = attrOrDefault(params, 'row', 0);
-      var radius = attrOrDefault(params, 'radius', 10);
-      var initWeight = attrOrDefault(params, 'initWeight', 1);
-      var blend = attrOrDefault(params, 'blend', false);
-      var inverse = attrOrDefault(params, 'inverse', false);
+      var column = (0, _utilities.attrOrDefault)(params, 'column', 0);
+      var row = (0, _utilities.attrOrDefault)(params, 'row', 0);
+      var radius = (0, _utilities.attrOrDefault)(params, 'radius', 10);
+      var initWeight = (0, _utilities.attrOrDefault)(params, 'initWeight', 1);
+      var blend = (0, _utilities.attrOrDefault)(params, 'blend', false);
+      var inverse = (0, _utilities.attrOrDefault)(params, 'inverse', false);
       var currRad = 0;
       var innerRad = 0;
       var currWeight = initWeight;
@@ -30244,7 +30112,7 @@ var makeRadialApplicator = function makeRadialApplicator(weightFn) // Modifies w
     };
   };
 };
-},{"./utilities":"pgriddy/utilities.js","./noise":"pgriddy/noise.js"}],"pgriddy/drawers.js":[function(require,module,exports) {
+},{"./utilities":"pgriddy/utilities.ts","./noise":"pgriddy/noise.ts"}],"pgriddy/drawers.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -30255,13 +30123,16 @@ exports.drawPoints = exports.draw = void 0;
 var _utilities = require("./utilities");
 
 // VARIOUS DRAWING FUNCTIONS FOR OUR CLASSES
-var draw = function draw(points) // Draws all points of a list of poitns onto the window
-// type -> Type of Processing object to draw (INT) [1: POINT, 2: CIRCLE, 3: RECT]
-// displayWeight -> Allow weight to dictate the fill
-{
-  return function (pInstance) {
-    var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
-    var displayWeight = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+var draw = function draw(points) {
+  return function (pInstance, type, displayWeight) {
+    if (type === void 0) {
+      type = 1;
+    }
+
+    if (displayWeight === void 0) {
+      displayWeight = true;
+    }
+
     drawPoints(points, pInstance, type, displayWeight);
   };
 };
@@ -30297,7 +30168,7 @@ var drawPoints = function drawPoints(points, pInstance, type, displayWeight) {
 };
 
 exports.drawPoints = drawPoints;
-},{"./utilities":"pgriddy/utilities.js"}],"pgriddy/point_grid.js":[function(require,module,exports) {
+},{"./utilities":"pgriddy/utilities.ts"}],"pgriddy/point_grid.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -30313,19 +30184,11 @@ var apps = _interopRequireWildcard(require("./applicators"));
 
 var _drawers = require("./drawers");
 
-var _utilities = require("./utilities");
-
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 /*
   The POINT GRID class.
@@ -30340,10 +30203,10 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
   sX -> Spacing between POINTs in X axis (INT)
   sY -> Spacing between POINTs in Y axis (INT)
 */
-var PointGrid = /*#__PURE__*/function () {
+var PointGrid =
+/** @class */
+function () {
   function PointGrid(numberX, numberY, centerPoint, spacingX, spacingY) {
-    _classCallCheck(this, PointGrid);
-
     this.numX = numberX;
     this.numY = numberY;
     this.center = centerPoint;
@@ -30370,9 +30233,10 @@ var PointGrid = /*#__PURE__*/function () {
     this.getLineNotOpped = get.getPGLineNotOpped(this);
     this.getCircle = get.getPGCircle(this);
     this.getPattern = get.getPGPattern(this);
-    this.getThreshold = get.getPGThreshold(this);
-    this.getRandom = get.getPGRandom(this);
-    this.getPerlin = get.getPGPerlin(this);
+    this.getThreshold = get.getThreshold(this.points);
+    this.getRandom = get.getRandom(this.points);
+    this.getPerlin = get.getPerlin(this.points);
+    this.getSimplex = get.getSimplex(this.points);
     /************************************************/
 
     /******************* DRAWING ********************/
@@ -30410,34 +30274,30 @@ var PointGrid = /*#__PURE__*/function () {
   /************************************************/
 
 
-  _createClass(PointGrid, [{
-    key: "checkBounds",
-    value: function checkBounds(columnStart, rowStart, columnEnd, rowEnd) {
-      // Checks whether the given row and column values exceed the number of columns and rows in a POINT_GRID
-      // columnStart, rowStart -> initial col and row values
-      // columnEnd, rowEnd -> final col and row values
-      return this.checkRowBounds(rowStart) && this.checkRowBounds(rowEnd) && this.checkColBounds(columnStart) && this.checkColBounds(columnEnd);
-    }
-  }, {
-    key: "checkRowBounds",
-    value: function checkRowBounds(row) {
-      // Checks whether the given row exceeds the bounds of the given POINT_GRID
-      // row -> row value to check
-      return row >= 0 && row < this.numY;
-    }
-  }, {
-    key: "checkColBounds",
-    value: function checkColBounds(col) {
-      // Checks whether the given column exceeds the bounds of the given POINT_GRID
-      // col -> col value to check
-      return col >= 0 && col < this.numX;
-    }
-  }]);
+  PointGrid.prototype.checkBounds = function (columnStart, rowStart, columnEnd, rowEnd) {
+    // Checks whether the given row and column values exceed the number of columns and rows in a POINT_GRID
+    // columnStart, rowStart -> initial col and row values
+    // columnEnd, rowEnd -> final col and row values
+    return this.checkRowBounds(rowStart) && this.checkRowBounds(rowEnd) && this.checkColBounds(columnStart) && this.checkColBounds(columnEnd);
+  };
+
+  PointGrid.prototype.checkRowBounds = function (row) {
+    // Checks whether the given row exceeds the bounds of the given POINT_GRID
+    // row -> row value to check
+    return row >= 0 && row < this.numY;
+  };
+
+  PointGrid.prototype.checkColBounds = function (col) {
+    // Checks whether the given column exceeds the bounds of the given POINT_GRID
+    // col -> col value to check
+    return col >= 0 && col < this.numX;
+  };
 
   return PointGrid;
 }();
 
-exports.default = PointGrid;
+var _default = PointGrid;
+exports.default = _default;
 
 function populateDefaultPoints(pointGrid) {
   // Populates the 'pointGrid.points' field
@@ -30453,7 +30313,7 @@ function populateDefaultPoints(pointGrid) {
     }
   }
 }
-},{"./grid_point":"pgriddy/grid_point.js","./getters":"pgriddy/getters.js","./applicators":"pgriddy/applicators.js","./drawers":"pgriddy/drawers.js","./utilities":"pgriddy/utilities.js"}],"index.js":[function(require,module,exports) {
+},{"./grid_point":"pgriddy/grid_point.ts","./getters":"pgriddy/getters.ts","./applicators":"pgriddy/applicators.ts","./drawers":"pgriddy/drawers.ts"}],"index.js":[function(require,module,exports) {
 "use strict";
 
 var _point_grid = _interopRequireDefault(require("./pgriddy/point_grid"));
@@ -30488,7 +30348,7 @@ var sketch = function sketch(p) {
 
 var container = document.getElementById('p5');
 var instance = new p5(sketch, container);
-},{"p5":"../node_modules/p5/lib/p5.min.js","./pgriddy/point_grid":"pgriddy/point_grid.js","./pgriddy/point":"pgriddy/point.js"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"p5":"../node_modules/p5/lib/p5.min.js","./pgriddy/point_grid":"pgriddy/point_grid.ts","./pgriddy/point":"pgriddy/point.ts"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -30516,7 +30376,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49594" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "64417" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

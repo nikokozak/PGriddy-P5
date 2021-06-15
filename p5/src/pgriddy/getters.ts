@@ -1,17 +1,20 @@
-import { arraySelector } from './utilities';
-import { PointGrid } from './point_grid';
+import { arraySelector, forEachPoint } from './utilities';
+import Point from './point';
+import GridPoint from './grid_point';
+import PointGrid from './point_grid';
+import { noise } from './noise';
 // VARIOUS GETTER FUNCTIONS FOR CLASSES
 
 /************************************************/
 /************ POINTGRID GETTERS *****************/
 /************************************************/
 
-export const getPGPoint = (pointGrid) =>
+export const getPGPoint = (pointGrid: PointGrid) : Function =>
   // Fetches a GridPoint from a PointGrid.
   // column -> column of the desired point.
   // row -> row of the desired point.
 {
-  return (column, row) => {
+  return (column: number, row: number) : any => {
 
     column = Math.min(column, pointGrid.numX);
     row = Math.min(row, pointGrid.numY);
@@ -21,31 +24,31 @@ export const getPGPoint = (pointGrid) =>
   };
 }
 
-export const getPGPointSafe = (pointGrid) =>
+export const getPGPointSafe = (pointGrid: PointGrid) : Function =>
   // Fetches a GridPoint from a PointGrid,
   // throwing an Error if the input parameters are
   // out of bounds.
   // column -> column of the desired point.
   // row -> row of the desired point.
 {
-  return (column, row) => {
+  return (column: number, row: number) : RangeError | any => { 
     if (column > pointGrid.numX - 1
         || row > pointGrid.numY - 1
         || column < 0
         || row < 0)
     {
-      throw("UNSAFE_POINT");
+      throw new RangeError("Point not in grid!");
     } else {
       return arraySelector(column, row, pointGrid.numX, pointGrid.points);
     }
   };
 }
 
-export const getPGColumnByIndex = (pointGrid) =>
+export const getPGColumnByIndex = (pointGrid: PointGrid) : Function =>
   // Fetches a column of GridPoints from a PointGrid
   // index -> the index of the desired column.
 {
-  return (index) => {
+  return (index: number) : any => { 
     let result = [];
     for (let i = 0; i < pointGrid.numY; i++) {
       result.push(arraySelector(index, i, pointGrid.numX, pointGrid.points));
@@ -54,11 +57,11 @@ export const getPGColumnByIndex = (pointGrid) =>
   };
 }
 
-export const getPGRowByIndex = (pointGrid) =>
+export const getPGRowByIndex = (pointGrid: PointGrid) : Function =>
   // Fetches a row of GridPoints from a PointGrid
   // index -> the index of the desired row.
 {
-  return (index) => {
+  return (index: number) : any => {
     let result = [];
     for (let i = 0; i < pointGrid.numX; i++) {
       result.push(arraySelector(i, index, pointGrid.numX, pointGrid.points));
@@ -67,12 +70,12 @@ export const getPGRowByIndex = (pointGrid) =>
   };
 }
 
-export const getPGOppositePoint = (pointGrid) =>
+export const getPGOppositePoint = (pointGrid: PointGrid) : Function =>
   // Fetches a vertically and horizontally symmetrical GridPoint based on a source GridPoint (defined by a column and a row coordinate).
   // column -> column index of source point
   // row -> row index of source point
 {
-  return (column, row) => {
+  return (column: number, row: number) : any => {
     let gridWidth = pointGrid.numX - 1;
     let gridHeight = pointGrid.numY - 1;
     let oppositeX = gridWidth - column;
@@ -82,13 +85,13 @@ export const getPGOppositePoint = (pointGrid) =>
   };
 }
 
-export const getPGOppositePointVert = (pointGrid) =>
+export const getPGOppositePointVert = (pointGrid: PointGrid) : Function =>
   // Fetches a vertically symmetrical POINT based on a source POINT and POINT_GRID
   // Where:
   // column -> column index of source point
   // row -> row index of source point
 {
-  return (column, row) => {
+  return (column: number, row: number) : any => {
     let gridHeight = pointGrid.numY - 1;
     let oppositeY = gridHeight - row;
 
@@ -96,13 +99,13 @@ export const getPGOppositePointVert = (pointGrid) =>
   };
 }
 
-export const getPGOppositePointHor = (column, row, pointGrid) =>
+export const getPGOppositePointHor = (pointGrid: PointGrid) : Function =>
 {
   // Fetches a horizontally symmetrical POINT based on a source POINT and POINT_GRID
   // Where:
   // column -> column index of source point
   // row -> row index of source point
-  return (column, row) => {
+  return (column: number, row: number) : any => {
     let gridWidth = pointGrid.numX - 1;
     let oppositeX = gridWidth - column;
 
@@ -110,14 +113,14 @@ export const getPGOppositePointHor = (column, row, pointGrid) =>
   };
 }
 
-export const getPGLine = (pointGrid) =>
+export const getPGLine = (pointGrid: PointGrid) : Function =>
   // fetches points on grid according to line given by (columnStart, rowStart), (columnEnd, rowEnd)
   // uses modified rasterizing algorithm by Alois Zingl (http://members.chello.at/~easyfilter/Bresenham.pdf)
   // Where:
   // columnStart, rowStart -> start point of line (by col and row index of POINT_GRID)
   // columnEnd, rowEnd -> end point of line (by col and row index of POINT_GRID)
 {
-  return (columnStart, rowStart, columnEnd, rowEnd) => {
+  return (columnStart: number, rowStart: number, columnEnd: number, rowEnd: number) : Array<GridPoint> => {
     let result = [];
     let dx = Math.abs(columnEnd - columnStart);
     let dy = Math.abs(rowEnd - rowStart) * -1;
@@ -132,7 +135,7 @@ export const getPGLine = (pointGrid) =>
       }
       e2 = err * 2;
       if (e2 >= dy) {
-        if (columnStart == columnEnd);
+        if (columnStart == columnEnd) break;
         err += dy; columnStart += sx;
       }
       if (e2 <= dx) {
@@ -145,14 +148,14 @@ export const getPGLine = (pointGrid) =>
   };
 }
 
-export const getPGLineNotOpped = (pointGrid) =>
+export const getPGLineNotOpped = (pointGrid: PointGrid) : Function =>
   // fetches points on grid according to line given by (columnStart, rowStart), (columnEnd, rowEnd)
   // instead of an optimized algorithm, uses a non-optimized slope-intercept based method.
   // Where:
   // columnStart, rowStart -> start point of line (by col and row index of POINT_GRID)
   // columnEnd, rowEnd -> end point of line (by col and row index of POINT_GRID)
 {
-  return (columnStart, rowStart, columnEnd, rowEnd) => {
+  return (columnStart: number, rowStart: number, columnEnd: number, rowEnd: number) : Array<GridPoint> => {
     let result = [];
 
     let dir = columnStart < columnEnd;
@@ -173,14 +176,14 @@ export const getPGLineNotOpped = (pointGrid) =>
   };
 }
 
-export const getPGCircle = (pointGrid) =>
+export const getPGCircle = (pointGrid: PointGrid) : Function =>
   // fetches points on grid according to circle with center (column, row) and radius (radius)
   // uses modified rasterizing algorithm by Alois Zingl (http://members.chello.at/~easyfilter/Bresenham.pdf)
   // Where:
   // column, row -> center of circle
   // radius -> radius of circle
 {
-  return (column, row, radius) => {
+  return (column: number, row: number, radius: number) : Array<GridPoint> => {
     let result = [];
 
     let x = -radius;
@@ -215,7 +218,7 @@ export const getPGCircle = (pointGrid) =>
   }
 }
 
-export const getPGPattern = (pointGrid) =>
+export const getPGPattern = (pointGrid: PointGrid) : Function => 
   // fetches points according to a list of directions (explained below) for a certain number of iterations
   //
   // column, row -> origin of pattern
@@ -223,9 +226,9 @@ export const getPGPattern = (pointGrid) =>
   // repetitions -> number of steps to take (from 0, where none are taken, to ...)
   // overflow -> allow for pattern to wrap around edges (if a similar point is found, pattern will break regardless of reps)
 {
-  return (column, row, directionList, repetitions, overflow = false) =>
+  return (column: number, row: number, directionList: Array<number>, repetitions: number, overflow: boolean = false) : Array<GridPoint> =>
   {
-    let tempResult = new Set(); // Consider just checking ArrayList for duplicates
+    let tempResult: Set<GridPoint> = new Set(); // Consider just checking ArrayList for duplicates
 
     let currentPoint = Object.assign({}, pointGrid.getPoint(column, row));
     let step = 0;
@@ -233,9 +236,9 @@ export const getPGPattern = (pointGrid) =>
     let mod = directionList.length;
 
     while (step < repetitions) {
-      if (tempResult.contains(currentPoint) || currentPoint == null) break;
+      if (tempResult.has(currentPoint) || currentPoint == null) break;
 
-      tempResult.push(Object.assign({}, currentPoint));
+      tempResult.add(Object.assign({}, currentPoint));
       //new Grid_Point(currentPoint));
 
       pointer = step % mod;
@@ -276,61 +279,82 @@ export const getPGPattern = (pointGrid) =>
   };
 }
 
-export const getPGThreshold = (pointGrid) =>
-  // retrieves GridPoints whose weight is > low and < high.
-  // low: bottom cutoff for weight
-  // high: top cutoff for weight
-  // pointGrid: grid to sample from
-{
-  return (low, high) => {
-    return getThreshold(low, high, pointGrid.points);
-  };
-}
-
-export const getPGRandom = (pointGrid) =>
+export const getRandom = (points: Array<Point | GridPoint>) : Function => 
   // Returns a selection of points based on a random application of
   // weights onto GridPoints in a given PointGrid, and a threshold to select from
   // Where:
   // low: bottom cutoff for weight
   // high: top cutoff for weight
 {
-  return (low, high) => {
-    let modGrid = PointGrid.clone(pointGrid);
+  return (low: number, high: number) : Array<Point | GridPoint> => {
+    let result: Array<Point | GridPoint> = [];
 
-    modGrid.applyRandom(false);
+    forEachPoint(points, (point: GridPoint, _index: number) => {
+      const rand = Math.random();
+      if (rand >= low && rand <= high) {
+        result.push(point);
+      }
+    });
 
-    return modGrid.getThreshold(low, high);
+    return result;
   };
 }
 
-export const getPGPerlin = (pointGrid) =>
+export const getPerlin = (points: Array<Point | GridPoint>) : Function =>
   // Returns a selection of points based on an application of perlin noise
   // weights onto GridPoints in a given PointGrid, and a threshold to select from
   // low: bottom cutoff for weight
   // high: top cutoff for weight
 {
-  return (low, high) => {
-    let modGrid = PointGrid.clone(pointGrid);
+  return (low: number, high: number, time: number = 0) : Array<Point | GridPoint> => {
+    let result: Array<Point | GridPoint> = [];
 
-    modGrid.applyPerlin(0, 1, 0, false);
+    forEachPoint(points, (point: GridPoint, _index: number) => {
+      const perlin = noise.perlin3(point.x, point.y, time);
+      if (perlin >= low && perlin <= high) {
+        result.push(point);
+      }
+    })
 
-    return modGrid.getThreshold(low, high);
+    return result;
   };
 }
 
-export const getThreshold = (low, high, pointArray) =>
-  // retrieves GridPoints whose weight is > low and < high.
+export const getSimplex = (points: Array<Point | GridPoint>) : Function =>
+  // Returns a selection of points based on an application of simplex noise
+  // weights onto GridPoints in a given PointGrid, and a threshold to select from
   // low: bottom cutoff for weight
   // high: top cutoff for weight
-  // pointGrid: grid to sample from
 {
-  let result = [];
+  return (low: number, high: number, time: number = 0) : Array<Point | GridPoint> => {
+    let result: Array<Point | GridPoint> = [];
 
-  for (let i = 0; i < pointArray.length; i++) {
-    if (pointArray[i].weight > low && pointArray[i].weight < high) {
-      result.push(pointArray[i]);
+    forEachPoint(points, (point: GridPoint, _index: number) => {
+      const simplex = noise.simplex3(point.x, point.y, time);
+      if (simplex >= low && simplex <= high) {
+        result.push(point);
+      }
+    })
+
+    return result;
+  };
+}
+
+export const getThreshold = (points: Array<Point | GridPoint>) =>
+{
+  // retrieves Points whose weight is > low and < high.
+  // low: bottom cutoff for weight
+  // high: top cutoff for weight
+  return (low: number, high: number) : Array<Point | GridPoint> =>
+  {
+    let result = [];
+
+    for (let i = 0; i < points.length; i++) {
+      if (points[i].weight > low && points[i].weight < high) {
+        result.push(points[i]);
+      }
     }
-  }
 
-  return result;
+    return result;
+  }
 }

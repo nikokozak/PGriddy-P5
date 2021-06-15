@@ -12,7 +12,11 @@
 export default class Point 
 {
 
-  constructor (x, y, weight = 1)
+  x: number;
+  y: number;
+  weight: number;
+
+  constructor (x: number, y: number, weight = 1)
   {
 
     this.x = x;
