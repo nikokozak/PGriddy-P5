@@ -1,4 +1,4 @@
-import { clamp, plotInCircle, easeInOutCubic } from './utilities';
+import { clamp, plotInCircle, easeInOutCubic, map } from './utilities';
 import { noise } from './noise';
 
 // TODO: Fix blending.
@@ -7,7 +7,21 @@ import { noise } from './noise';
 /************ GENERAL APPLICATORS ***************/
 /************************************************/
 
+const attrOrDefault = (paramObj, paramAttr, alt) =>
+  // General helper for extracting options from a param object, 
+  // and providing a default alternative if the param is null.
+{
+  if (paramObj) {
+    return paramObj.hasOwnProperty(paramAttr) ? paramObj[paramAttr] : alt;
+  } else {
+    return alt;
+  }
+}
+
 const forEachPoint = (points, fun) =>
+  // General helper for point iteration.
+  // points -> points to iterate through
+  // fun (point, index) -> function to affect points with
 {
   for (let i = 0, n = points.length; i < n; i++) {
     fun(points[i], i);
@@ -156,7 +170,7 @@ export const applyPGLinRadGradient = (pointGrid) =>
 
 }
 
-export const applyPGSmoothGradient = (pointGrid) =>
+export const applyPGSmoothRadGradient = (pointGrid) =>
   // Modifies weights of Grid_Points in a given Point_Grid according to a radial gradient, using an in-out-easing function. Returns a new Point_Grid
   // uses modified rasterizing algorithm by Alois Zingl (http://members.chello.at/~easyfilter/Bresenham.pdf)
   // Where:
@@ -257,14 +271,16 @@ export const applyPerlin = (points) =>
 {
   return (params) => 
   {
-    let min = params.min || 0;
-    let max = params.max || 1;
-    let time = params.time || 0;
-    let blend = params.blend || false;
+    let min = attrOrDefault(params, 'min', 0);
+    let max = attrOrDefault(params, 'max', 1);
+    let time = attrOrDefault(params, 'time', 0);
+    let blend = attrOrDefault(params, 'blend', false);
+    
+    //console.log(noise.perlin3(1, 1, 0));
     
     return forEachPoint(points, (point, _i) => {
       //TODO: Figure out blending
-      map(noise.perlin3(point.x, point.y, time), 0, 1, min, max);
+      point.weight = map(noise.perlin3(point.x, point.y, time), 0, 1, min, max);
     });
   }
 }
@@ -280,14 +296,14 @@ export const applySimplex = (points) =>
 {
   return (params) => 
   {
-    let min = params.min || 0;
-    let max = params.max || 1;
-    let time = params.time || 0;
-    let blend = params.blend || false;
+    let min = attrOrDefault(params, 'min', 0);
+    let max = attrOrDefault(params, 'max', 1);
+    let time = attrOrDefault(params, 'time', 0);
+    let blend = attrOrDefault(params, 'blend', false);
     
     return forEachPoint(points, (point, _i) => {
       // TODO: Figure out blending
-      map(noise.simplex3(point.x, point.y, time), 0, 1, min, max);
+      point.weight = map(noise.simplex3(point.x, point.y, time), 0, 1, min, max);
     });
   }
 }

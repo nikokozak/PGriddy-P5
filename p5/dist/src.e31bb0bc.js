@@ -29374,7 +29374,840 @@ var getThreshold = function getThreshold(low, high, pointArray) // retrieves Gri
 };
 
 exports.getThreshold = getThreshold;
-},{"./utilities":"pgriddy/utilities.js","./point_grid":"pgriddy/point_grid.js"}],"pgriddy/drawers.js":[function(require,module,exports) {
+},{"./utilities":"pgriddy/utilities.js","./point_grid":"pgriddy/point_grid.js"}],"pgriddy/noise.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.noise = exports.default = void 0;
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+/*
+ * A speed-improved perlin and simplex noise algorithms for 2D.
+ *
+ * Based on example code by Stefan Gustavson (stegu@itn.liu.se).
+ * Optimisations by Peter Eastman (peastman@drizzle.stanford.edu).
+ * Better rank ordering method by Stefan Gustavson in 2012.
+ * Converted to Javascript by Joseph Gentle.
+ *
+ * Version 2012-03-09
+ *
+ * This code was placed in the public domain by its original author,
+ * Stefan Gustavson. You may use it as you see fit, but
+ * attribution is appreciated.
+ *
+ * Refactored into ES6 Module pattern by Nikolai Kozak.
+ *
+ * 2021-06-14
+ */
+// ##### Perlin noise stuff
+var fade = function fade(t) {
+  return t * t * t * (t * (t * 6 - 15) + 10);
+};
+/* Perlin did not seem to be working with this version of lerp
+const lerp1 = (a, b, t) => 
+{
+  return (1-t)*a + t*b;
+}
+*/
+
+
+var lerp = function lerp(t, a, b) {
+  return a + t * (b - a);
+};
+
+var Grad = /*#__PURE__*/function () {
+  function Grad(x, y, z) {
+    _classCallCheck(this, Grad);
+
+    this.x = x;
+    this.y = y;
+    this.z = z;
+  }
+
+  _createClass(Grad, [{
+    key: "dot2",
+    value: function dot2(x, y) {
+      return this.x * x + this.y * y;
+    }
+  }, {
+    key: "dot3",
+    value: function dot3(x, y, z) {
+      return this.x * x + this.y * y + this.z * z;
+    }
+  }]);
+
+  return Grad;
+}(); // Skewing and unskewing factors for 2, 3, and 4 dimensions
+
+
+var F2 = 0.5 * (Math.sqrt(3) - 1);
+var G2 = (3 - Math.sqrt(3)) / 6;
+var F3 = 1 / 3;
+var G3 = 1 / 6;
+
+var Noise = /*#__PURE__*/function () {
+  function Noise() // To remove the need for index wrapping, double the permutation table length
+  {
+    _classCallCheck(this, Noise);
+
+    this.perm = new Array(512);
+    this.gradP = new Array(512);
+    this.grad3 = [new Grad(1, 1, 0), new Grad(-1, 1, 0), new Grad(1, -1, 0), new Grad(-1, -1, 0), new Grad(1, 0, 1), new Grad(-1, 0, 1), new Grad(1, 0, -1), new Grad(-1, 0, -1), new Grad(0, 1, 1), new Grad(0, -1, 1), new Grad(0, 1, -1), new Grad(0, -1, -1)];
+    this.p = [151, 160, 137, 91, 90, 15, 131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23, 190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33, 88, 237, 149, 56, 87, 174, 20, 125, 136, 171, 168, 68, 175, 74, 165, 71, 134, 139, 48, 27, 166, 77, 146, 158, 231, 83, 111, 229, 122, 60, 211, 133, 230, 220, 105, 92, 41, 55, 46, 245, 40, 244, 102, 143, 54, 65, 25, 63, 161, 1, 216, 80, 73, 209, 76, 132, 187, 208, 89, 18, 169, 200, 196, 135, 130, 116, 188, 159, 86, 164, 100, 109, 198, 173, 186, 3, 64, 52, 217, 226, 250, 124, 123, 5, 202, 38, 147, 118, 126, 255, 82, 85, 212, 207, 206, 59, 227, 47, 16, 58, 17, 182, 189, 28, 42, 223, 183, 170, 213, 119, 248, 152, 2, 44, 154, 163, 70, 221, 153, 101, 155, 167, 43, 172, 9, 129, 22, 39, 253, 19, 98, 108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228, 251, 34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235, 249, 14, 239, 107, 49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254, 138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180];
+    this.seed(0);
+  }
+
+  _createClass(Noise, [{
+    key: "seed",
+    value: function seed(_seed) // This isn't a very good seeding function, but it works ok. It supports 2^16
+    // different seed values. Write something better if you need more seeds.
+    // NOTE: Use 0-1 or 0-65536 as seed values.
+    {
+      if (_seed > 0 && _seed < 1) {
+        // Scale the seed out
+        _seed *= 65536;
+      }
+
+      _seed = Math.floor(_seed);
+
+      if (_seed < 256) {
+        _seed |= _seed << 8;
+      }
+
+      for (var i = 0; i < 256; i++) {
+        var v = void 0;
+
+        if (i & 1) {
+          v = this.p[i] ^ _seed & 255;
+        } else {
+          v = this.p[i] ^ _seed >> 8 & 255;
+        }
+
+        this.perm[i] = this.perm[i + 256] = v;
+        this.gradP[i] = this.gradP[i + 256] = this.grad3[v % 12];
+      }
+    }
+  }, {
+    key: "simplex2",
+    value: // 2D simplex noise
+    function simplex2(xin, yin) {
+      var n0, n1, n2; // Noise contributions from the three corners
+      // Skew the input space to determine which simplex cell we're in
+
+      var s = (xin + yin) * F2; // Hairy factor for 2D
+
+      var i = Math.floor(xin + s);
+      var j = Math.floor(yin + s);
+      var t = (i + j) * G2;
+      var x0 = xin - i + t; // The x,y distances from the cell origin, unskewed.
+
+      var y0 = yin - j + t; // For the 2D case, the simplex shape is an equilateral triangle.
+      // Determine which simplex we are in.
+
+      var i1, j1; // Offsets for second (middle) corner of simplex in (i,j) coords
+
+      if (x0 > y0) {
+        // lower triangle, XY order: (0,0)->(1,0)->(1,1)
+        i1 = 1;
+        j1 = 0;
+      } else {
+        // upper triangle, YX order: (0,0)->(0,1)->(1,1)
+        i1 = 0;
+        j1 = 1;
+      } // A step of (1,0) in (i,j) means a step of (1-c,-c) in (x,y), and
+      // a step of (0,1) in (i,j) means a step of (-c,1-c) in (x,y), where
+      // c = (3-sqrt(3))/6
+
+
+      var x1 = x0 - i1 + G2; // Offsets for middle corner in (x,y) unskewed coords
+
+      var y1 = y0 - j1 + G2;
+      var x2 = x0 - 1 + 2 * G2; // Offsets for last corner in (x,y) unskewed coords
+
+      var y2 = y0 - 1 + 2 * G2; // Work out the hashed gradient indices of the three simplex corners
+
+      i &= 255;
+      j &= 255;
+      var gi0 = this.gradP[i + this.perm[j]];
+      var gi1 = this.gradP[i + i1 + this.perm[j + j1]];
+      var gi2 = this.gradP[i + 1 + this.perm[j + 1]]; // Calculate the contribution from the three corners
+
+      var t0 = 0.5 - x0 * x0 - y0 * y0;
+
+      if (t0 < 0) {
+        n0 = 0;
+      } else {
+        t0 *= t0;
+        n0 = t0 * t0 * gi0.dot2(x0, y0); // (x,y) of grad3 used for 2D gradient
+      }
+
+      var t1 = 0.5 - x1 * x1 - y1 * y1;
+
+      if (t1 < 0) {
+        n1 = 0;
+      } else {
+        t1 *= t1;
+        n1 = t1 * t1 * gi1.dot2(x1, y1);
+      }
+
+      var t2 = 0.5 - x2 * x2 - y2 * y2;
+
+      if (t2 < 0) {
+        n2 = 0;
+      } else {
+        t2 *= t2;
+        n2 = t2 * t2 * gi2.dot2(x2, y2);
+      } // Add contributions from each corner to get the final noise value.
+      // The result is scaled to return values in the interval [-1,1].
+
+
+      return 70 * (n0 + n1 + n2);
+    }
+  }, {
+    key: "simplex3",
+    value: // 3D simplex noise
+    function simplex3(xin, yin, zin) {
+      var n0, n1, n2, n3; // Noise contributions from the four corners
+      // Skew the input space to determine which simplex cell we're in
+
+      var s = (xin + yin + zin) * F3; // Hairy factor for 2D
+
+      var i = Math.floor(xin + s);
+      var j = Math.floor(yin + s);
+      var k = Math.floor(zin + s);
+      var t = (i + j + k) * G3;
+      var x0 = xin - i + t; // The x,y distances from the cell origin, unskewed.
+
+      var y0 = yin - j + t;
+      var z0 = zin - k + t; // For the 3D case, the simplex shape is a slightly irregular tetrahedron.
+      // Determine which simplex we are in.
+
+      var i1, j1, k1; // Offsets for second corner of simplex in (i,j,k) coords
+
+      var i2, j2, k2; // Offsets for third corner of simplex in (i,j,k) coords
+
+      if (x0 >= y0) {
+        if (y0 >= z0) {
+          i1 = 1;
+          j1 = 0;
+          k1 = 0;
+          i2 = 1;
+          j2 = 1;
+          k2 = 0;
+        } else if (x0 >= z0) {
+          i1 = 1;
+          j1 = 0;
+          k1 = 0;
+          i2 = 1;
+          j2 = 0;
+          k2 = 1;
+        } else {
+          i1 = 0;
+          j1 = 0;
+          k1 = 1;
+          i2 = 1;
+          j2 = 0;
+          k2 = 1;
+        }
+      } else {
+        if (y0 < z0) {
+          i1 = 0;
+          j1 = 0;
+          k1 = 1;
+          i2 = 0;
+          j2 = 1;
+          k2 = 1;
+        } else if (x0 < z0) {
+          i1 = 0;
+          j1 = 1;
+          k1 = 0;
+          i2 = 0;
+          j2 = 1;
+          k2 = 1;
+        } else {
+          i1 = 0;
+          j1 = 1;
+          k1 = 0;
+          i2 = 1;
+          j2 = 1;
+          k2 = 0;
+        }
+      } // A step of (1,0,0) in (i,j,k) means a step of (1-c,-c,-c) in (x,y,z),
+      // a step of (0,1,0) in (i,j,k) means a step of (-c,1-c,-c) in (x,y,z), and
+      // a step of (0,0,1) in (i,j,k) means a step of (-c,-c,1-c) in (x,y,z), where
+      // c = 1/6.
+
+
+      var x1 = x0 - i1 + G3; // Offsets for second corner
+
+      var y1 = y0 - j1 + G3;
+      var z1 = z0 - k1 + G3;
+      var x2 = x0 - i2 + 2 * G3; // Offsets for third corner
+
+      var y2 = y0 - j2 + 2 * G3;
+      var z2 = z0 - k2 + 2 * G3;
+      var x3 = x0 - 1 + 3 * G3; // Offsets for fourth corner
+
+      var y3 = y0 - 1 + 3 * G3;
+      var z3 = z0 - 1 + 3 * G3; // Work out the hashed gradient indices of the four simplex corners
+
+      i &= 255;
+      j &= 255;
+      k &= 255;
+      var gi0 = this.gradP[i + this.perm[j + this.perm[k]]];
+      var gi1 = this.gradP[i + i1 + this.perm[j + j1 + this.perm[k + k1]]];
+      var gi2 = this.gradP[i + i2 + this.perm[j + j2 + this.perm[k + k2]]];
+      var gi3 = this.gradP[i + 1 + this.perm[j + 1 + this.perm[k + 1]]]; // Calculate the contribution from the four corners
+
+      var t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0;
+
+      if (t0 < 0) {
+        n0 = 0;
+      } else {
+        t0 *= t0;
+        n0 = t0 * t0 * gi0.dot3(x0, y0, z0); // (x,y) of grad3 used for 2D gradient
+      }
+
+      var t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1;
+
+      if (t1 < 0) {
+        n1 = 0;
+      } else {
+        t1 *= t1;
+        n1 = t1 * t1 * gi1.dot3(x1, y1, z1);
+      }
+
+      var t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2;
+
+      if (t2 < 0) {
+        n2 = 0;
+      } else {
+        t2 *= t2;
+        n2 = t2 * t2 * gi2.dot3(x2, y2, z2);
+      }
+
+      var t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3;
+
+      if (t3 < 0) {
+        n3 = 0;
+      } else {
+        t3 *= t3;
+        n3 = t3 * t3 * gi3.dot3(x3, y3, z3);
+      } // Add contributions from each corner to get the final noise value.
+      // The result is scaled to return values in the interval [-1,1].
+
+
+      return 32 * (n0 + n1 + n2 + n3);
+    }
+  }, {
+    key: "perlin2",
+    value: // 2D Perlin Noise
+    function perlin2(x, y) {
+      // Find unit grid cell containing point
+      var X = Math.floor(x),
+          Y = Math.floor(y); // Get relative xy coordinates of point within that cell
+
+      x = x - X;
+      y = y - Y; // Wrap the integer cells at 255 (smaller integer period can be introduced here)
+
+      X = X & 255;
+      Y = Y & 255; // Calculate noise contributions from each of the four corners
+
+      var n00 = this.gradP[X + this.perm[Y]].dot2(x, y);
+      var n01 = this.gradP[X + this.perm[Y + 1]].dot2(x, y - 1);
+      var n10 = this.gradP[X + 1 + this.perm[Y]].dot2(x - 1, y);
+      var n11 = this.gradP[X + 1 + this.perm[Y + 1]].dot2(x - 1, y - 1); // Compute the fade curve value for x
+
+      var u = fade(x); // Interpolate the four results
+
+      return lerp(fade(y), lerp(n00, n10, u), lerp(n01, n11, u));
+    }
+  }, {
+    key: "perlin3",
+    value: // 3D Perlin Noise
+    function perlin3(x, y, z) {
+      // Find unit grid cell containing point
+      var X = Math.floor(x),
+          Y = Math.floor(y),
+          Z = Math.floor(z); // Get relative xyz coordinates of point within that cell
+
+      x = x - X;
+      y = y - Y;
+      z = z - Z; // Wrap the integer cells at 255 (smaller integer period can be introduced here)
+
+      X = X & 255;
+      Y = Y & 255;
+      Z = Z & 255; // Calculate noise contributions from each of the eight corners
+
+      var n000 = this.gradP[X + this.perm[Y + this.perm[Z]]].dot3(x, y, z);
+      var n001 = this.gradP[X + this.perm[Y + this.perm[Z + 1]]].dot3(x, y, z - 1);
+      var n010 = this.gradP[X + this.perm[Y + 1 + this.perm[Z]]].dot3(x, y - 1, z);
+      var n011 = this.gradP[X + this.perm[Y + 1 + this.perm[Z + 1]]].dot3(x, y - 1, z - 1);
+      var n100 = this.gradP[X + 1 + this.perm[Y + this.perm[Z]]].dot3(x - 1, y, z);
+      var n101 = this.gradP[X + 1 + this.perm[Y + this.perm[Z + 1]]].dot3(x - 1, y, z - 1);
+      var n110 = this.gradP[X + 1 + this.perm[Y + 1 + this.perm[Z]]].dot3(x - 1, y - 1, z);
+      var n111 = this.gradP[X + 1 + this.perm[Y + 1 + this.perm[Z + 1]]].dot3(x - 1, y - 1, z - 1); // Compute the fade curve value for x, y, z
+
+      var u = fade(x);
+      var v = fade(y);
+      var w = fade(z); // Interpolate
+
+      return lerp(v, lerp(lerp(n000, n100, u), lerp(n001, n101, u), w), lerp(lerp(n010, n110, u), lerp(n011, n111, u), w));
+    }
+  }]);
+
+  return Noise;
+}();
+
+exports.default = Noise;
+var noise = new Noise();
+exports.noise = noise;
+},{}],"pgriddy/applicators.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.applyPGImage = exports.applyRandom = exports.applySimplex = exports.applyPerlin = exports.applyPGSinRadGradientSlow = exports.applyPGSinRadGradient = exports.applyPGSmoothRadGradientSlow = exports.applyPGSmoothRadGradient = exports.applyPGLinRadGradient = exports.applyPGLinRadGradientSlow = exports.multPositionsWeighted = exports.multPositions = exports.addToPositionsWeighted = exports.addToPositions = exports.addToWeights = exports.setWeights = void 0;
+
+var _utilities = require("./utilities");
+
+var _noise = require("./noise");
+
+var _this = void 0;
+
+// TODO: Fix blending.
+
+/************************************************/
+
+/************ GENERAL APPLICATORS ***************/
+
+/************************************************/
+var attrOrDefault = function attrOrDefault(paramObj, paramAttr, alt) // General helper for extracting options from a param object, 
+// and providing a default alternative if the param is null.
+{
+  if (paramObj) {
+    return paramObj.hasOwnProperty(paramAttr) ? paramObj[paramAttr] : alt;
+  } else {
+    return alt;
+  }
+};
+
+var forEachPoint = function forEachPoint(points, fun) // General helper for point iteration.
+// points -> points to iterate through
+// fun (point, index) -> function to affect points with
+{
+  for (var i = 0, n = points.length; i < n; i++) {
+    fun(points[i], i);
+  }
+
+  return points;
+};
+
+var setWeights = function setWeights(points) // Sets all weights in a given set of points
+// weight -> new weight (value between 0 and 1)
+{
+  return function (weight) {
+    weight = (0, _utilities.clamp)(weight, 0, 1);
+    return forEachPoint(points, function (point, _i) {
+      point.weight = weight;
+    });
+  };
+};
+
+exports.setWeights = setWeights;
+
+var addToWeights = function addToWeights(points) // Adds a given number to all weights in a given set of Points.
+// weight -> amount to add (value between 0 and 1)
+{
+  return function (weight) {
+    return forEachPoint(points, function (point, _i) {
+      point.weight = (0, _utilities.clamp)(point.weight + weight, 0, 1);
+    });
+  };
+};
+
+exports.addToWeights = addToWeights;
+
+var addToPositions = function addToPositions(points) // Moves points by adding the provided values to X and Y coordinates, scaled according to each point's weight.
+// Where:
+// x -> amount to add to Point.x
+// y -> amount to add to Point.y
+{
+  return function (x, y) {
+    return forEachPoint(points, function (point, _i) {
+      point.x += x;
+      point.y += y;
+    });
+  };
+};
+
+exports.addToPositions = addToPositions;
+
+var addToPositionsWeighted = function addToPositionsWeighted(points) // Moves points by adding the provided values to X and Y coordinates, scaled according to each point's weight.
+// Where:
+// x -> amount to add to Point.x
+// y -> amount to add to Point.y
+{
+  return function (x, y) {
+    return forEachPoint(points, function (point, _i) {
+      point.x += x * point.weight;
+      point.y += y * point.weight;
+    });
+  };
+};
+
+exports.addToPositionsWeighted = addToPositionsWeighted;
+
+var multPositions = function multPositions(points) // Moves points in a grid by multiplying the provided values to X and Y coordinates.
+// Where:
+// x -> amount to add to GRID_POINT.x
+// y -> amount to add to GRID_POINT.y
+{
+  return function (x, y) {
+    return forEachPoint(points, function (point, _i) {
+      point.x *= x;
+      point.y *= y;
+    });
+  };
+};
+
+exports.multPositions = multPositions;
+
+var multPositionsWeighted = function multPositionsWeighted(points) // Moves points in a grid by multiplying the provided values to X and Y coordinates, scaled according to each point's weight.
+// Where:
+// x -> amount to add to GRID_POINT.x
+// y -> amount to add to GRID_POINT.y
+{
+  return function (x, y) {
+    return forEachPoint(points, function (point, _i) {
+      point.x *= x * point.weight;
+      point.y *= y * point.weight;
+    });
+  };
+};
+
+exports.multPositionsWeighted = multPositionsWeighted;
+
+var applyPGLinRadGradientSlow = function applyPGLinRadGradientSlow(pointGrid) {
+  // Modifies weights of Grid_Points in a given Point_Grid according to a radial gradient, returns a new Point_Grid
+  // NOTE: This looks nicer, but is far more computationally expensive than applyRadialGradient given that it uses sqrt()
+  // in the underlying circle-plotting algo. Avoid using if possible.
+  // Where:
+  // _col, _row -> origin of gradient
+  // _r -> radius of gradient (i.e. extent of gradient effect)
+  // _init_decay -> initial weight value of gradient
+  // _sample_rate -> radius increment per cycle (think of this as sampling density, if there are empty points in gradient then reduce this number, NOT TOO FAR THOUGH).
+  // _inverse -> whether to invert the gradient
+  // _blend -> whether to add the gradient onto the previous Point_Grid or start anew
+  var applicatorFn = makeSlowRadialApplicator(function (context) {
+    var decayFactor = context.radius / context.sampleRate;
+    var decay = context.initWeight / decayFactor;
+    return context.inverse ? context.currWeight + decay : context.currWeight - decay;
+  });
+  return applicatorFn(pointGrid);
+};
+
+exports.applyPGLinRadGradientSlow = applyPGLinRadGradientSlow;
+
+var applyPGLinRadGradient = function applyPGLinRadGradient(pointGrid) // Modifies weights of Grid_Points in a given Point_Grid according to a radial gradient, returns a new Point_Grid
+// uses modified rasterizing algorithm by Alois Zingl (http://members.chello.at/~easyfilter/Bresenham.pdf)
+// Where:
+// column, row -> origin of gradient
+// radius -> radius of gradient (i.e. extent of gradient effect)
+// initWeight -> initial weight value for gradient
+// inverse -> whether to invert the gradient
+// blend -> whether to add the gradient onto the previous Point_Grid or start anew
+{
+  var applicatorFn = makeRadialApplicator(function (context) {
+    var decay = context.initWeight / context.radius;
+    return context.inverse ? context.currWeight + decay : context.currWeight - decay;
+  });
+  return applicatorFn(pointGrid);
+};
+
+exports.applyPGLinRadGradient = applyPGLinRadGradient;
+
+var applyPGSmoothRadGradient = function applyPGSmoothRadGradient(pointGrid) // Modifies weights of Grid_Points in a given Point_Grid according to a radial gradient, using an in-out-easing function. Returns a new Point_Grid
+// uses modified rasterizing algorithm by Alois Zingl (http://members.chello.at/~easyfilter/Bresenham.pdf)
+// Where:
+// _col, _row -> origin of gradient
+// _rad -> radius of gradient (i.e. extent of gradient effect)
+// _init_weight -> initial weight value for gradient
+// _inverse -> whether to invert the gradient
+// _blend -> whether to add the gradient onto the previous Point_Grid or start anew
+{
+  var applicatorFn = makeRadialApplicator(function (context) {
+    return (0, _utilities.easeInOutCubic)(context.currRad, context.inverse ? 0 : context.initWeight, context.inverse ? context.initWeight : context.initWeight * -1, context.radius);
+  });
+  return applicatorFn(pointGrid);
+};
+
+exports.applyPGSmoothRadGradient = applyPGSmoothRadGradient;
+
+var applyPGSmoothRadGradientSlow = function applyPGSmoothRadGradientSlow(pointGrid) {
+  // Modifies weights of Grid_Points in a given Point_Grid according to a radial gradient, using an in-out easing function, returns a new Point_Grid
+  // NOTE: This looks nicer, but is far more computationally expensive than applyRadialGradient given that it uses sqrt()
+  // in the underlying circle-plotting algo. Avoid using if possible.
+  // Where
+  // _col, _row -> origin of gradient
+  // _r -> radius of gradient (i.e. extent of gradient effect)
+  // _init_weight -> initial weight value of gradient
+  // _sample_rate -> radius increment per cycle (think of this as sampling density, if there are empty points in gradient then reduce this number, NOT TOO FAR THOUGH).
+  // _inverse -> whether to invert the gradient
+  // _blend -> whether to allow blending with previous weights (otherwise gradient overrides previous weights)
+  var applicatorFn = makeSlowRadialApplicator(function (context) {
+    return (0, _utilities.easeInOutCubic)(context.currRad, context.inverse ? 0 : context.initWeight, context.inverse ? context.initWeight : context.initWeight * -1, context.radius);
+  });
+  return applicatorFn(pointGrid);
+};
+
+exports.applyPGSmoothRadGradientSlow = applyPGSmoothRadGradientSlow;
+
+var applyPGSinRadGradient = function applyPGSinRadGradient(pointGrid) // Modifies weights of Grid_Points in a given Point_Grid according to a radial gradient, using an in-out-easing function. Returns a new Point_Grid
+// uses modified rasterizing algorithm by Alois Zingl (http://members.chello.at/~easyfilter/Bresenham.pdf)
+// Where:
+// _col, _row -> origin of gradient
+// _rad -> radius of gradient (i.e. extent of gradient effect)
+// _init_weight -> initial weight value for gradient
+// _inverse -> whether to invert the gradient
+// _blend -> whether to add the gradient onto the previous Point_Grid or start anew
+{
+  var applicatorFn = makeRadialApplicator(function (context) {
+    var frequency = context.params.frequency || 1;
+    var shift = context.params.shift || 1;
+    return sinMap(context.currRad, frequency, shift);
+  });
+  return applicatorFn(pointGrid);
+};
+
+exports.applyPGSinRadGradient = applyPGSinRadGradient;
+
+var applyPGSinRadGradientSlow = function applyPGSinRadGradientSlow(pointGrid) {
+  // Modifies weights of Grid_Points in a given Point_Grid according to a radial gradient, using an in-out easing function, returns a new Point_Grid
+  // NOTE: This looks nicer, but is far more computationally expensive than applyRadialGradient given that it uses sqrt()
+  // in the underlying circle-plotting algo. Avoid using if possible.
+  // Where:
+  // _col, _row -> origin of gradient
+  // _r -> radius of gradient (i.e. extent of gradient effect)
+  // _init_weight -> initial weight value of gradient
+  // _sample_rate -> radius increment per cycle (think of this as sampling density, if there are empty points in gradient then reduce this number, NOT TOO FAR THOUGH).
+  // _inverse -> whether to invert the gradient
+  // _blend -> whether to allow blending with previous weights (otherwise gradient overrides previous weights)
+  var applicatorFn = makeSlowRadialApplicator(function (context) {
+    // Freq and shift can be passed in as params to the final func.
+    var frequency = context.params.frequency || 1;
+    var shift = context.params.shift || 1;
+    return sinMap(context.currRad, frequency, shift);
+  });
+  return applicatorFn(pointGrid);
+};
+
+exports.applyPGSinRadGradientSlow = applyPGSinRadGradientSlow;
+
+var applyPerlin = function applyPerlin(points) // Apply weights to point in Point_Grid based on Perlin Noise.
+// Perlin positions are taken from Grid_Points in Grid.
+// Where:
+// _min -> Min weight threshold
+// _max -> Max weight threshold
+// _time -> Time (Z-axis) factor for animating Perlin (takes values from 0.0 - 1.0);
+// _blend -> Whether to blend weight with any previous weight present in Point_Grid
+{
+  return function (params) {
+    var min = attrOrDefault(params, 'min', 0);
+    var max = attrOrDefault(params, 'max', 1);
+    var time = attrOrDefault(params, 'time', 0);
+    var blend = attrOrDefault(params, 'blend', false); //console.log(noise.perlin3(1, 1, 0));
+
+    return forEachPoint(points, function (point, _i) {
+      //TODO: Figure out blending
+      point.weight = (0, _utilities.map)(_noise.noise.perlin3(point.x, point.y, time), 0, 1, min, max);
+    });
+  };
+};
+
+exports.applyPerlin = applyPerlin;
+
+var applySimplex = function applySimplex(points) // Apply weights to point in Point_Grid based on Perlin Noise.
+// Perlin positions are taken from Grid_Points in Grid.
+// Where:
+// _min -> Min weight threshold
+// _max -> Max weight threshold
+// _time -> Time (Z-axis) factor for animating Perlin (takes values from 0.0 - 1.0);
+// _blend -> Whether to blend weight with any previous weight present in Point_Grid
+{
+  return function (params) {
+    var min = attrOrDefault(params, 'min', 0);
+    var max = attrOrDefault(params, 'max', 1);
+    var time = attrOrDefault(params, 'time', 0);
+    var blend = attrOrDefault(params, 'blend', false);
+    return forEachPoint(points, function (point, _i) {
+      // TODO: Figure out blending
+      point.weight = (0, _utilities.map)(_noise.noise.simplex3(point.x, point.y, time), 0, 1, min, max);
+    });
+  };
+};
+
+exports.applySimplex = applySimplex;
+
+var applyRandom = function applyRandom(points) {
+  return function () {
+    var blend = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+    return forEachPoint(points, function (point, _i) {
+      // TODO: bring in random function.
+      point.weight = random(0, 1);
+    });
+  };
+};
+
+exports.applyRandom = applyRandom;
+
+var applyPGImage = function applyPGImage(pointGrid) // Loads an image and applies weights to Grid_Points in Point_Grid
+// based on R, G, B, L (lightness) values or combinations thereof.
+// Where:
+// _file -> filename of image to load
+// _scale -> scale the image to encompass full grid or load image at center of grid (no scale applied)
+// _mode -> any of the following: "r", "g", "b", "l" (luma)
+{
+  return function (params) {// TODO: Figure out how to bring in P5 sensibly as dependency.   
+  };
+};
+
+exports.applyPGImage = applyPGImage;
+
+var makeSlowRadialApplicator = function makeSlowRadialApplicator(weightFn) // Factory for slow radial applicator functions. 
+// Takes a weight function which in turn receives all variables in the applicator builder function scope.
+// Returns a curried function that must then be curried again with again with a pointGrid.
+// Further variable declarations can be made in the weightFn declaration, using the context to fetch params for example.
+{
+  return function (pointGrid) {
+    return function (params) {
+      var scope = _this;
+      var column = params.column || 0;
+      var row = params.row || 0;
+      var radius = params.radius || 10;
+      var initWeight = params.initWeight || 1;
+      var sampleRate = params.sampleRate || 0.5;
+      var blend = params.blend || false;
+      var inverse = params.inverse || false;
+      var currRad = 0;
+      var initX = column - radius;
+      var finX = column + radius;
+      var currX = initX;
+      var currWeight = initWeight;
+      var yVal = {};
+
+      while (currRad <= radius) {
+        while (currX <= finX) {
+          yVal = (0, _utilities.plotInCircle)(currX, column, row, currRad);
+
+          if (pointGrid.checkColumnBounds(currX) && pointGrid.checkRowBounds(yVal.a)) {
+            var point = pointGrid.getPoint(currX, yVal.a);
+            point.weight = blend ? (0, _utilities.clamp)(point.weight + currWeight, 0, 1) : currWeight;
+          }
+
+          if (pointGrid.checkColumnBounds(currX) && pointGrid.checkRowBounds(yVal.b)) {
+            var _point = pointGrid.getPoint(currX, yVal.b);
+
+            _point.weight = blend ? (0, _utilities.clamp)(_point.weight + currWeight, 0, 1) : currWeight;
+          }
+
+          currX++;
+        }
+
+        currRad += sampleRate;
+        currX = initX;
+        currWeight = weightFn(scope);
+        currWeight = (0, _utilities.clamp)(currWeight, 0, 1);
+      }
+
+      return pointGrid.points;
+    };
+  };
+};
+
+var makeRadialApplicator = function makeRadialApplicator(weightFn) // Modifies weights of Grid_Points in a given Point_Grid according to a radial gradient, using an in-out-easing function. Returns a new Point_Grid
+// uses modified rasterizing algorithm by Alois Zingl (http://members.chello.at/~easyfilter/Bresenham.pdf)
+// Where:
+// _col, _row -> origin of gradient
+// _rad -> radius of gradient (i.e. extent of gradient effect)
+// _init_weight -> initial weight value for gradient
+// _inverse -> whether to invert the gradient
+// _blend -> whether to add the gradient onto the previous Point_Grid or start anew
+{
+  return function (pointGrid) {
+    return function (params) {
+      var context = _this;
+      var column = params.column || 0;
+      var row = params.row || 0;
+      var radius = params.radius || 10;
+      var initWeight = params.initWeight || 1;
+      var inverse = params.inverse || false;
+      var blend = params.blend || false;
+      var currRad = 0;
+      var innerRad = 0;
+      var currWeight = initWeight;
+
+      if (pointGrid.checkColumnBounds(column) && pointGrid.checkRowBounds(row)) {
+        pointGrid.getPoint(column, row).weight = currWeight;
+      }
+
+      while (currRad <= radius) {
+        innerRad = currRad;
+        var x = currRad * -1;
+        var y = 0;
+        var err = 2 - 2 * currRad;
+
+        while (x < 0) {
+          if (pointGrid.checkColumnBounds(column - x) && pointGrid.checkRowBounds(row + y)) {
+            pointGrid.getPoint(column - x, row + y).weight = currWeight;
+          }
+
+          if (pointGrid.checkColumnBounds(column - y) && pointGrid.checkRowBounds(row - x)) {
+            pointGrid.getPoint(column - y, row - x).weight = currWeight;
+          }
+
+          if (pointGrid.checkColumnBounds(column + x) && pointGrid.checkRowBounds(row - y)) {
+            pointGrid.getPoint(column + x, row - y).weight = currWeight;
+          }
+
+          if (pointGrid.checkColumnBounds(column + y) && pointGrid.checkColumnBounds(row + x)) {
+            pointGrid.getPoint(column + y, row + x).weight = currWeight;
+          }
+
+          innerRad = err;
+
+          if (innerRad <= 0) {
+            y += 1;
+            err += 2 * y + 1;
+          }
+
+          if (innerRad > 0) {
+            x += 1;
+            err += 2 * x + 1;
+          }
+        }
+
+        currRad += 1;
+        currWeight = weightFn(context);
+        currWeight = (0, _utilities.clamp)(currWeight, 0, 1);
+      }
+
+      if (blend) {} // TODO
+
+
+      return pointGrid.points;
+    };
+  };
+};
+},{"./utilities":"pgriddy/utilities.js","./noise":"pgriddy/noise.js"}],"pgriddy/drawers.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -29438,6 +30271,8 @@ exports.default = void 0;
 var _grid_point = _interopRequireDefault(require("./grid_point"));
 
 var get = _interopRequireWildcard(require("./getters"));
+
+var apps = _interopRequireWildcard(require("./applicators"));
 
 var _drawers = require("./drawers");
 
@@ -29508,6 +30343,27 @@ var PointGrid = /*#__PURE__*/function () {
     /************************************************/
 
     this.draw = (0, _drawers.draw)(this.points);
+    /************************************************/
+
+    /******************* APPLICATORS ****************/
+
+    /************************************************/
+
+    this.setWeights = apps.setWeights(this.points);
+    this.addToWeights = apps.addToWeights(this.points);
+    this.addToPositions = apps.addToPositions(this.points);
+    this.addToPositionsWeighted = apps.addToPositionsWeighted(this.points);
+    this.multPositions = apps.multPositions(this.points);
+    this.multPositionsWeighted = apps.multPositionsWeighted(this.points);
+    this.applyLinRadGradientSlow = apps.applyPGLinRadGradientSlow(this);
+    this.applyLinRadGradient = apps.applyPGLinRadGradient(this);
+    this.applySmoothRadGradientSlow = apps.applyPGSmoothRadGradientSlow(this);
+    this.applySmoothRadGradient = apps.applyPGSmoothRadGradient(this);
+    this.applySinRadGradientSlow = apps.applyPGSinRadGradientSlow(this);
+    this.applySinRadGradient = apps.applyPGSinRadGradient(this);
+    this.applyPerlin = apps.applyPerlin(this.points);
+    this.applySimplex = apps.applySimplex(this.points);
+    this.applyRandom = apps.applyRandom(this.points);
   }
   /************************************************/
 
@@ -29559,7 +30415,7 @@ function populateDefaultPoints(pointGrid) {
     }
   }
 }
-},{"./grid_point":"pgriddy/grid_point.js","./getters":"pgriddy/getters.js","./drawers":"pgriddy/drawers.js","./utilities":"pgriddy/utilities.js"}],"index.js":[function(require,module,exports) {
+},{"./grid_point":"pgriddy/grid_point.js","./getters":"pgriddy/getters.js","./applicators":"pgriddy/applicators.js","./drawers":"pgriddy/drawers.js","./utilities":"pgriddy/utilities.js"}],"index.js":[function(require,module,exports) {
 "use strict";
 
 var _point_grid = _interopRequireDefault(require("./pgriddy/point_grid"));
@@ -29572,24 +30428,26 @@ var p5 = require('p5');
 
 // -------------- SETUP ---------------- //
 var size = {
-  width: 100,
-  height: 100
+  width: 500,
+  height: 500
 };
 
 var sketch = function sketch(p) {
   var gridCenter = new _point.default(size.width / 2, size.height / 2);
   var grid = new _point_grid.default(20, 20, gridCenter, 10, 10);
-  console.log(grid);
 
   p.setup = function () {
     p.createCanvas(size.width, size.height);
   };
 
   p.draw = function () {
+    grid.applySimplex({
+      time: p.frameCount
+    });
     p.background(0);
     p.fill(255);
     p.circle(10, 10, 10);
-    grid.draw(p, 2);
+    grid.draw(p, 3);
   };
 };
 
@@ -29623,7 +30481,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59008" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49594" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

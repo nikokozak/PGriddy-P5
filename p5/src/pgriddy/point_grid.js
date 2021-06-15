@@ -72,10 +72,10 @@ export default class PointGrid
     this.multPositionsWeighted = apps.multPositionsWeighted(this.points);
     this.applyLinRadGradientSlow = apps.applyPGLinRadGradientSlow(this);
     this.applyLinRadGradient = apps.applyPGLinRadGradient(this);
-    this.applySmoothGradientSlow = apps.applyPGSmoothGradientSlow(this);
-    this.applySmoothGradient = apps.applyPGSmoothGradient(this);
+    this.applySmoothRadGradientSlow = apps.applyPGSmoothRadGradientSlow(this);
+    this.applySmoothRadGradient = apps.applyPGSmoothRadGradient(this);
     this.applySinRadGradientSlow = apps.applyPGSinRadGradientSlow(this);
-    this.applySinRadGradient = apps.applySinRadGradient(this);
+    this.applySinRadGradient = apps.applyPGSinRadGradient(this);
     this.applyPerlin = apps.applyPerlin(this.points);
     this.applySimplex = apps.applySimplex(this.points);
     this.applyRandom = apps.applyRandom(this.points);

@@ -24,9 +24,16 @@ const fade = (t) =>
   return t*t*t*(t*(t*6-15)+10);
 }
 
-const lerp = (a, b, t) => 
+/* Perlin did not seem to be working with this version of lerp
+const lerp1 = (a, b, t) => 
 {
   return (1-t)*a + t*b;
+}
+*/
+
+const lerp = (t, a, b) =>
+{
+  return a + t*(b-a);
 }
 
 class Grad 
@@ -221,10 +228,10 @@ export default class Noise
     i &= 255;
     j &= 255;
     k &= 255;
-    var gi0 = this.gradP[i+   perm[j+   perm[k   ]]];
-    var gi1 = this.gradP[i+i1+perm[j+j1+perm[k+k1]]];
-    var gi2 = this.gradP[i+i2+perm[j+j2+perm[k+k2]]];
-    var gi3 = this.gradP[i+ 1+perm[j+ 1+perm[k+ 1]]];
+    var gi0 = this.gradP[i+   this.perm[j+   this.perm[k   ]]];
+    var gi1 = this.gradP[i+i1+this.perm[j+j1+this.perm[k+k1]]];
+    var gi2 = this.gradP[i+i2+this.perm[j+j2+this.perm[k+k2]]];
+    var gi3 = this.gradP[i+ 1+this.perm[j+ 1+this.perm[k+ 1]]];
 
     // Calculate the contribution from the four corners
     var t0 = 0.6 - x0*x0 - y0*y0 - z0*z0;
@@ -272,19 +279,20 @@ export default class Noise
     X = X & 255; Y = Y & 255;
 
     // Calculate noise contributions from each of the four corners
-    var n00 = this.gradP[X+perm[Y]].dot2(x, y);
-    var n01 = this.gradP[X+perm[Y+1]].dot2(x, y-1);
-    var n10 = this.gradP[X+1+perm[Y]].dot2(x-1, y);
-    var n11 = this.gradP[X+1+perm[Y+1]].dot2(x-1, y-1);
+    var n00 = this.gradP[X+this.perm[Y]].dot2(x, y);
+    var n01 = this.gradP[X+this.perm[Y+1]].dot2(x, y-1);
+    var n10 = this.gradP[X+1+this.perm[Y]].dot2(x-1, y);
+    var n11 = this.gradP[X+1+this.perm[Y+1]].dot2(x-1, y-1);
 
     // Compute the fade curve value for x
     var u = fade(x);
 
     // Interpolate the four results
     return lerp(
-        lerp(n00, n10, u),
-        lerp(n01, n11, u),
-       fade(y));
+      fade(y),
+      lerp(n00, n10, u),
+      lerp(n01, n11, u)
+    );
   };
 
   // 3D Perlin Noise
@@ -314,13 +322,14 @@ export default class Noise
 
     // Interpolate
     return lerp(
+        v,
         lerp(
           lerp(n000, n100, u),
           lerp(n001, n101, u), w),
         lerp(
           lerp(n010, n110, u),
-          lerp(n011, n111, u), w),
-       v);
+          lerp(n011, n111, u), w)
+       );
   };
 }
 
