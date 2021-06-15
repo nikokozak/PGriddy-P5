@@ -1,4 +1,5 @@
 import { clamp, plotInCircle, easeInOutCubic } from './utilities';
+import { noise } from './noise';
 
 // TODO: Fix blending.
 
@@ -262,8 +263,31 @@ export const applyPerlin = (points) =>
     let blend = params.blend || false;
     
     return forEachPoint(points, (point, _i) => {
-      //TODO : bring in noise function. Figure out blending.
-      map(noise(point.x, point.y, time), 0, 1, min, max);
+      //TODO: Figure out blending
+      map(noise.perlin3(point.x, point.y, time), 0, 1, min, max);
+    });
+  }
+}
+
+export const applySimplex = (points) =>
+  // Apply weights to point in Point_Grid based on Perlin Noise.
+  // Perlin positions are taken from Grid_Points in Grid.
+  // Where:
+  // _min -> Min weight threshold
+  // _max -> Max weight threshold
+  // _time -> Time (Z-axis) factor for animating Perlin (takes values from 0.0 - 1.0);
+  // _blend -> Whether to blend weight with any previous weight present in Point_Grid
+{
+  return (params) => 
+  {
+    let min = params.min || 0;
+    let max = params.max || 1;
+    let time = params.time || 0;
+    let blend = params.blend || false;
+    
+    return forEachPoint(points, (point, _i) => {
+      // TODO: Figure out blending
+      map(noise.simplex3(point.x, point.y, time), 0, 1, min, max);
     });
   }
 }

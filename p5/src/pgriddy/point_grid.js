@@ -1,5 +1,6 @@
 import GridPoint from './grid_point';
 import * as get from './getters';
+import * as apps from './applicators';
 import { draw } from './drawers';
 import { arraySelector, weightToRGB } from './utilities';
 
@@ -59,6 +60,25 @@ export default class PointGrid
 
     this.draw = draw(this.points);
 
+    /************************************************/
+    /******************* APPLICATORS ****************/
+    /************************************************/
+
+    this.setWeights = apps.setWeights(this.points);
+    this.addToWeights = apps.addToWeights(this.points);
+    this.addToPositions = apps.addToPositions(this.points);
+    this.addToPositionsWeighted = apps.addToPositionsWeighted(this.points);
+    this.multPositions = apps.multPositions(this.points);
+    this.multPositionsWeighted = apps.multPositionsWeighted(this.points);
+    this.applyLinRadGradientSlow = apps.applyPGLinRadGradientSlow(this);
+    this.applyLinRadGradient = apps.applyPGLinRadGradient(this);
+    this.applySmoothGradientSlow = apps.applyPGSmoothGradientSlow(this);
+    this.applySmoothGradient = apps.applyPGSmoothGradient(this);
+    this.applySinRadGradientSlow = apps.applyPGSinRadGradientSlow(this);
+    this.applySinRadGradient = apps.applySinRadGradient(this);
+    this.applyPerlin = apps.applyPerlin(this.points);
+    this.applySimplex = apps.applySimplex(this.points);
+    this.applyRandom = apps.applyRandom(this.points);
   }
 
   /************************************************/
