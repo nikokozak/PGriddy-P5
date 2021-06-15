@@ -1,6 +1,6 @@
 export function arraySelector(column, row, matrixWidth, array)
 {
-  return array[row * matrixWidth + column];
+  return array[column * matrixWidth + row];
 }
 
 export function map(source, inMin, inMax, outMin, outMax)
@@ -53,7 +53,7 @@ export function plotCircleTop(input, centerX, centerY, radius)
   // _centerX, _centerY -> center of desired circle
   // _r -> radius of desired circle
 {
-  return Math.sqrt(r ** 2 - (input - centerX) ** 2) + centerY;
+  return Math.round(Math.sqrt(radius ** 2 - (input - centerX) ** 2)) + centerY;
 }
 
 export function plotCircleBottom(input, centerX, centerY, radius)

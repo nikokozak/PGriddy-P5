@@ -28924,7 +28924,7 @@ exports.sinMap = sinMap;
 exports.easeInOutCubic = easeInOutCubic;
 
 function arraySelector(column, row, matrixWidth, array) {
-  return array[row * matrixWidth + column];
+  return array[column * matrixWidth + row];
 }
 
 function map(source, inMin, inMax, outMin, outMax) {
@@ -28973,7 +28973,7 @@ function plotCircleTop(input, centerX, centerY, radius) // Returns the positive 
 // _centerX, _centerY -> center of desired circle
 // _r -> radius of desired circle
 {
-  return Math.sqrt(Math.pow(r, 2) - Math.pow(input - centerX, 2)) + centerY;
+  return Math.round(Math.sqrt(Math.pow(radius, 2) - Math.pow(input - centerX, 2))) + centerY;
 }
 
 function plotCircleBottom(input, centerX, centerY, radius) // Returns the negative Y value corresponding to a given X of a desired circle.
@@ -29775,13 +29775,11 @@ exports.noise = noise;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.applyPGImage = exports.applyRandom = exports.applySimplex = exports.applyPerlin = exports.applyPGSinRadGradientSlow = exports.applyPGSinRadGradient = exports.applyPGSmoothRadGradientSlow = exports.applyPGSmoothRadGradient = exports.applyPGLinRadGradient = exports.applyPGLinRadGradientSlow = exports.multPositionsWeighted = exports.multPositions = exports.addToPositionsWeighted = exports.addToPositions = exports.addToWeights = exports.setWeights = void 0;
+exports.applyPGImage = exports.applyRandom = exports.applySimplex = exports.applyPerlin = exports.applyPGSinRadGradientSlow = exports.applyPGSinRadGradient = exports.applyPGSmoothRadGradientSlow = exports.applyPGSmoothRadGradient = exports.applyPGLinRadGradient = exports.applyPGLinRadGradientSlow = exports.multPositionsWeighted = exports.multPositions = exports.addToPositionsWeighted = exports.addToPositions = exports.multiplyWeights = exports.addToWeights = exports.setWeights = void 0;
 
 var _utilities = require("./utilities");
 
 var _noise = require("./noise");
-
-var _this = void 0;
 
 // TODO: Fix blending.
 
@@ -29835,6 +29833,18 @@ var addToWeights = function addToWeights(points) // Adds a given number to all w
 };
 
 exports.addToWeights = addToWeights;
+
+var multiplyWeights = function multiplyWeights(points) // Multiplies all weights in a given set of Points.
+// weight -> amount to add (value between 0 and 1)
+{
+  return function (weight) {
+    return forEachPoint(points, function (point, _i) {
+      point.weight = (0, _utilities.clamp)(point.weight * weight, 0, 1);
+    });
+  };
+};
+
+exports.multiplyWeights = multiplyWeights;
 
 var addToPositions = function addToPositions(points) // Moves points by adding the provided values to X and Y coordinates, scaled according to each point's weight.
 // Where:
@@ -29981,9 +29991,9 @@ var applyPGSinRadGradient = function applyPGSinRadGradient(pointGrid) // Modifie
 // _blend -> whether to add the gradient onto the previous Point_Grid or start anew
 {
   var applicatorFn = makeRadialApplicator(function (context) {
-    var frequency = context.params.frequency || 1;
-    var shift = context.params.shift || 1;
-    return sinMap(context.currRad, frequency, shift);
+    var frequency = attrOrDefault(context.params, 'frequency', 1);
+    var shift = attrOrDefault(context.params, 'shift', 1);
+    return (0, _utilities.sinMap)(context.currRad, frequency, shift);
   });
   return applicatorFn(pointGrid);
 };
@@ -30003,9 +30013,9 @@ var applyPGSinRadGradientSlow = function applyPGSinRadGradientSlow(pointGrid) {
   // _blend -> whether to allow blending with previous weights (otherwise gradient overrides previous weights)
   var applicatorFn = makeSlowRadialApplicator(function (context) {
     // Freq and shift can be passed in as params to the final func.
-    var frequency = context.params.frequency || 1;
-    var shift = context.params.shift || 1;
-    return sinMap(context.currRad, frequency, shift);
+    var frequency = attrOrDefault(context.params, 'frequency', 1);
+    var shift = attrOrDefault(context.params, 'shift', 1);
+    return (0, _utilities.sinMap)(context.currRad, frequency, shift);
   });
   return applicatorFn(pointGrid);
 };
@@ -30062,7 +30072,7 @@ var applyRandom = function applyRandom(points) {
     var blend = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
     return forEachPoint(points, function (point, _i) {
       // TODO: bring in random function.
-      point.weight = random(0, 1);
+      point.weight = Math.random();
     });
   };
 };
@@ -30089,14 +30099,13 @@ var makeSlowRadialApplicator = function makeSlowRadialApplicator(weightFn) // Fa
 {
   return function (pointGrid) {
     return function (params) {
-      var scope = _this;
-      var column = params.column || 0;
-      var row = params.row || 0;
-      var radius = params.radius || 10;
-      var initWeight = params.initWeight || 1;
-      var sampleRate = params.sampleRate || 0.5;
-      var blend = params.blend || false;
-      var inverse = params.inverse || false;
+      var column = attrOrDefault(params, 'column', 0);
+      var row = attrOrDefault(params, 'row', 0);
+      var radius = attrOrDefault(params, 'radius', 10);
+      var initWeight = attrOrDefault(params, 'initWeight', 1);
+      var sampleRate = attrOrDefault(params, 'sampleRate', 0.5);
+      var blend = attrOrDefault(params, 'blend', false);
+      var inverse = attrOrDefault(params, 'inverse', false);
       var currRad = 0;
       var initX = column - radius;
       var finX = column + radius;
@@ -30108,12 +30117,12 @@ var makeSlowRadialApplicator = function makeSlowRadialApplicator(weightFn) // Fa
         while (currX <= finX) {
           yVal = (0, _utilities.plotInCircle)(currX, column, row, currRad);
 
-          if (pointGrid.checkColumnBounds(currX) && pointGrid.checkRowBounds(yVal.a)) {
+          if (pointGrid.checkColBounds(currX) && pointGrid.checkRowBounds(yVal.a)) {
             var point = pointGrid.getPoint(currX, yVal.a);
             point.weight = blend ? (0, _utilities.clamp)(point.weight + currWeight, 0, 1) : currWeight;
           }
 
-          if (pointGrid.checkColumnBounds(currX) && pointGrid.checkRowBounds(yVal.b)) {
+          if (pointGrid.checkColBounds(currX) && pointGrid.checkRowBounds(yVal.b)) {
             var _point = pointGrid.getPoint(currX, yVal.b);
 
             _point.weight = blend ? (0, _utilities.clamp)(_point.weight + currWeight, 0, 1) : currWeight;
@@ -30124,7 +30133,22 @@ var makeSlowRadialApplicator = function makeSlowRadialApplicator(weightFn) // Fa
 
         currRad += sampleRate;
         currX = initX;
-        currWeight = weightFn(scope);
+        currWeight = weightFn({
+          column: column,
+          row: row,
+          radius: radius,
+          initWeight: initWeight,
+          sampleRate: sampleRate,
+          blend: blend,
+          inverse: inverse,
+          currRad: currRad,
+          initX: initX,
+          finX: finX,
+          currX: currX,
+          currWeight: currWeight,
+          yVal: yVal,
+          params: params
+        });
         currWeight = (0, _utilities.clamp)(currWeight, 0, 1);
       }
 
@@ -30144,18 +30168,17 @@ var makeRadialApplicator = function makeRadialApplicator(weightFn) // Modifies w
 {
   return function (pointGrid) {
     return function (params) {
-      var context = _this;
-      var column = params.column || 0;
-      var row = params.row || 0;
-      var radius = params.radius || 10;
-      var initWeight = params.initWeight || 1;
-      var inverse = params.inverse || false;
-      var blend = params.blend || false;
+      var column = attrOrDefault(params, 'column', 0);
+      var row = attrOrDefault(params, 'row', 0);
+      var radius = attrOrDefault(params, 'radius', 10);
+      var initWeight = attrOrDefault(params, 'initWeight', 1);
+      var blend = attrOrDefault(params, 'blend', false);
+      var inverse = attrOrDefault(params, 'inverse', false);
       var currRad = 0;
       var innerRad = 0;
       var currWeight = initWeight;
 
-      if (pointGrid.checkColumnBounds(column) && pointGrid.checkRowBounds(row)) {
+      if (pointGrid.checkColBounds(column) && pointGrid.checkRowBounds(row)) {
         pointGrid.getPoint(column, row).weight = currWeight;
       }
 
@@ -30166,19 +30189,19 @@ var makeRadialApplicator = function makeRadialApplicator(weightFn) // Modifies w
         var err = 2 - 2 * currRad;
 
         while (x < 0) {
-          if (pointGrid.checkColumnBounds(column - x) && pointGrid.checkRowBounds(row + y)) {
+          if (pointGrid.checkColBounds(column - x) && pointGrid.checkRowBounds(row + y)) {
             pointGrid.getPoint(column - x, row + y).weight = currWeight;
           }
 
-          if (pointGrid.checkColumnBounds(column - y) && pointGrid.checkRowBounds(row - x)) {
+          if (pointGrid.checkColBounds(column - y) && pointGrid.checkRowBounds(row - x)) {
             pointGrid.getPoint(column - y, row - x).weight = currWeight;
           }
 
-          if (pointGrid.checkColumnBounds(column + x) && pointGrid.checkRowBounds(row - y)) {
+          if (pointGrid.checkColBounds(column + x) && pointGrid.checkRowBounds(row - y)) {
             pointGrid.getPoint(column + x, row - y).weight = currWeight;
           }
 
-          if (pointGrid.checkColumnBounds(column + y) && pointGrid.checkColumnBounds(row + x)) {
+          if (pointGrid.checkColBounds(column + y) && pointGrid.checkColBounds(row + x)) {
             pointGrid.getPoint(column + y, row + x).weight = currWeight;
           }
 
@@ -30196,7 +30219,21 @@ var makeRadialApplicator = function makeRadialApplicator(weightFn) // Modifies w
         }
 
         currRad += 1;
-        currWeight = weightFn(context);
+        currWeight = weightFn({
+          column: column,
+          row: row,
+          radius: radius,
+          initWeight: initWeight,
+          blend: blend,
+          inverse: inverse,
+          currRad: currRad,
+          innerRad: innerRad,
+          currWeight: currWeight,
+          x: x,
+          y: y,
+          err: err,
+          params: params
+        });
         currWeight = (0, _utilities.clamp)(currWeight, 0, 1);
       }
 
@@ -30351,6 +30388,7 @@ var PointGrid = /*#__PURE__*/function () {
 
     this.setWeights = apps.setWeights(this.points);
     this.addToWeights = apps.addToWeights(this.points);
+    this.multiplyWeights = apps.multiplyWeights(this.points);
     this.addToPositions = apps.addToPositions(this.points);
     this.addToPositionsWeighted = apps.addToPositionsWeighted(this.points);
     this.multPositions = apps.multPositions(this.points);
@@ -30441,13 +30479,10 @@ var sketch = function sketch(p) {
   };
 
   p.draw = function () {
-    grid.applySimplex({
-      time: p.frameCount
-    });
     p.background(0);
     p.fill(255);
     p.circle(10, 10, 10);
-    grid.draw(p, 3);
+    grid.draw(p, 2);
   };
 };
 

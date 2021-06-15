@@ -1,4 +1,4 @@
-import { clamp, plotInCircle, easeInOutCubic, map } from './utilities';
+import { clamp, plotInCircle, easeInOutCubic, map, sinMap } from './utilities';
 import { noise } from './noise';
 
 // TODO: Fix blending.
@@ -51,6 +51,19 @@ export const addToWeights = (points) =>
 
     return forEachPoint(points, (point, _i) => {
       point.weight = clamp(point.weight + weight, 0, 1);
+    });
+
+  };
+};
+
+export const multiplyWeights = (points) =>
+// Multiplies all weights in a given set of Points.
+// weight -> amount to add (value between 0 and 1)
+{
+  return (weight) => {
+
+    return forEachPoint(points, (point, _i) => {
+      point.weight = clamp(point.weight * weight, 0, 1);
     });
 
   };
@@ -226,8 +239,8 @@ export const applyPGSinRadGradient = (pointGrid) =>
 {
   
   const applicatorFn = makeRadialApplicator((context) => {
-    const frequency = context.params.frequency || 1;
-    const shift = context.params.shift || 1;
+    const frequency = attrOrDefault(context.params, 'frequency', 1);
+    const shift = attrOrDefault(context.params, 'shift', 1);
     return sinMap(context.currRad, frequency, shift);
   });
 
@@ -250,8 +263,8 @@ export const applyPGSinRadGradientSlow = (pointGrid) =>
   
   const applicatorFn = makeSlowRadialApplicator((context) => {
     // Freq and shift can be passed in as params to the final func.
-    const frequency = context.params.frequency || 1;
-    const shift = context.params.shift || 1;
+    const frequency = attrOrDefault(context.params, 'frequency', 1);
+    const shift = attrOrDefault(context.params, 'shift', 1);
 
     return sinMap(context.currRad, frequency, shift);
   });
@@ -314,7 +327,7 @@ export const applyRandom = (points) =>
   {
     return forEachPoint(points, (point, _i) => {
       // TODO: bring in random function.
-      point.weight = random(0, 1);
+      point.weight = Math.random();
     });
   }
 }
@@ -342,14 +355,13 @@ const makeSlowRadialApplicator = (weightFn) =>
   return (pointGrid) => {
     return (params) =>
     {
-      let scope = this;
-      let column = params.column || 0;
-      let row = params.row || 0;
-      let radius = params.radius || 10;
-      let initWeight = params.initWeight || 1;
-      let sampleRate = params.sampleRate || 0.5;
-      let blend = params.blend || false;
-      let inverse = params.inverse || false;
+      let column = attrOrDefault(params, 'column', 0);
+      let row = attrOrDefault(params, 'row', 0);
+      let radius = attrOrDefault(params, 'radius', 10);
+      let initWeight = attrOrDefault(params, 'initWeight', 1);
+      let sampleRate = attrOrDefault(params, 'sampleRate', 0.5);
+      let blend = attrOrDefault(params, 'blend', false);
+      let inverse = attrOrDefault(params, 'inverse', false);
 
       let currRad = 0;
       let initX = column - radius;
@@ -365,7 +377,7 @@ const makeSlowRadialApplicator = (weightFn) =>
 
           yVal = plotInCircle(currX, column, row, currRad);
 
-          if (pointGrid.checkColumnBounds(currX) && pointGrid.checkRowBounds(yVal.a)) {
+          if (pointGrid.checkColBounds(currX) && pointGrid.checkRowBounds(yVal.a)) {
             const point = pointGrid.getPoint(currX, yVal.a);
             point.weight =
               blend ?
@@ -373,7 +385,7 @@ const makeSlowRadialApplicator = (weightFn) =>
               : currWeight;
           }
 
-          if (pointGrid.checkColumnBounds(currX) && pointGrid.checkRowBounds(yVal.b)) {
+          if (pointGrid.checkColBounds(currX) && pointGrid.checkRowBounds(yVal.b)) {
             const point = pointGrid.getPoint(currX, yVal.b);
             point.weight =
               blend ?
@@ -387,7 +399,10 @@ const makeSlowRadialApplicator = (weightFn) =>
 
         currRad += sampleRate;
         currX = initX;
-        currWeight = weightFn(scope);
+        currWeight = weightFn({column, row,
+          radius, initWeight, sampleRate, blend,
+          inverse, currRad, initX, finX, currX,
+          currWeight, yVal, params });
         currWeight = clamp(currWeight, 0, 1);
 
       }
@@ -412,19 +427,18 @@ const makeRadialApplicator = (weightFn) =>
   {
     return (params) =>
     {
-      let context = this;
-      let column = params.column || 0;
-      let row = params.row || 0;
-      let radius = params.radius || 10;
-      let initWeight = params.initWeight || 1;
-      let inverse = params.inverse || false;
-      let blend = params.blend || false;
+      let column = attrOrDefault(params, 'column', 0);
+      let row = attrOrDefault(params, 'row', 0);
+      let radius = attrOrDefault(params, 'radius', 10);
+      let initWeight = attrOrDefault(params, 'initWeight', 1);
+      let blend = attrOrDefault(params, 'blend', false);
+      let inverse = attrOrDefault(params, 'inverse', false);
 
       let currRad = 0;
       let innerRad = 0;
       let currWeight = initWeight;
 
-      if (pointGrid.checkColumnBounds(column) && pointGrid.checkRowBounds(row)) {
+      if (pointGrid.checkColBounds(column) && pointGrid.checkRowBounds(row)) {
         pointGrid.getPoint(column, row).weight = currWeight;
       }
 
@@ -436,16 +450,16 @@ const makeRadialApplicator = (weightFn) =>
         let err = 2 - 2 * currRad;
 
         while (x < 0) {
-          if (pointGrid.checkColumnBounds(column - x) && pointGrid.checkRowBounds(row + y)) {
+          if (pointGrid.checkColBounds(column - x) && pointGrid.checkRowBounds(row + y)) {
             pointGrid.getPoint(column - x, row + y).weight = currWeight;
           }
-          if (pointGrid.checkColumnBounds(column - y) && pointGrid.checkRowBounds(row - x)) {
+          if (pointGrid.checkColBounds(column - y) && pointGrid.checkRowBounds(row - x)) {
             pointGrid.getPoint(column - y, row - x).weight = currWeight;
           }
-          if (pointGrid.checkColumnBounds(column + x) && pointGrid.checkRowBounds(row - y)) {
+          if (pointGrid.checkColBounds(column + x) && pointGrid.checkRowBounds(row - y)) {
             pointGrid.getPoint(column + x, row - y).weight = currWeight;
           }
-          if (pointGrid.checkColumnBounds(column + y) && pointGrid.checkColumnBounds(row + x)) {
+          if (pointGrid.checkColBounds(column + y) && pointGrid.checkColBounds(row + x)) {
             pointGrid.getPoint(column + y, row + x).weight = currWeight;
           }
 
@@ -464,7 +478,10 @@ const makeRadialApplicator = (weightFn) =>
 
         currRad += 1;
 
-        currWeight = weightFn(context);
+        currWeight = weightFn({
+          column, row, radius, initWeight, blend, inverse,
+          currRad, innerRad, currWeight, x, y, err, params
+        });
         currWeight = clamp(currWeight, 0, 1);
 
       }

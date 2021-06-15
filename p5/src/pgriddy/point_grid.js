@@ -66,6 +66,7 @@ export default class PointGrid
 
     this.setWeights = apps.setWeights(this.points);
     this.addToWeights = apps.addToWeights(this.points);
+    this.multiplyWeights = apps.multiplyWeights(this.points);
     this.addToPositions = apps.addToPositions(this.points);
     this.addToPositionsWeighted = apps.addToPositionsWeighted(this.points);
     this.multPositions = apps.multPositions(this.points);

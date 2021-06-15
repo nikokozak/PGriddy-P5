@@ -19,11 +19,10 @@ const sketch = (p) => {
 	}
 
 	p.draw = () => {
-		grid.applySimplex({time: p.frameCount});
 		p.background(0);
 		p.fill(255);
 		p.circle(10, 10, 10);
-    grid.draw(p, 3);
+    grid.draw(p, 2);
 	}
 }
 
