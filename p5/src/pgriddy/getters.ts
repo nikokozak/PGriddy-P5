@@ -2,6 +2,7 @@ import { arraySelector, forEachPoint } from './utilities';
 import Point from './point';
 import GridPoint from './grid_point';
 import PointGrid from './point_grid';
+import Selection from './selection';
 import { noise } from './noise';
 // VARIOUS GETTER FUNCTIONS FOR CLASSES
 
@@ -16,8 +17,10 @@ export const getPGPoint = (pointGrid: PointGrid) : Function =>
 {
   return (column: number, row: number) : any => {
 
-    column = Math.min(column, pointGrid.numX);
-    row = Math.min(row, pointGrid.numY);
+   // column = Math.min(column, pointGrid.numX);
+   // row = Math.min(row, pointGrid.numY);
+    column = column % pointGrid.numX;
+    row = row % pointGrid.numY;
 
     return arraySelector(column, row, pointGrid.numX, pointGrid.points);
 
@@ -236,7 +239,8 @@ export const getPGPattern = (pointGrid: PointGrid) : Function =>
     let mod = directionList.length;
 
     while (step < repetitions) {
-      if (tempResult.has(currentPoint) || currentPoint == null) break;
+      // if (tempResult.has(currentPoint) || currentPoint == null) break;
+      if (currentPoint == null) break;
 
       tempResult.add(Object.assign({}, currentPoint));
       //new Grid_Point(currentPoint));
@@ -275,7 +279,7 @@ export const getPGPattern = (pointGrid: PointGrid) : Function =>
 
     }
 
-    return Array.from(tempResult);
+    return new Selection(Array.from(tempResult));
   };
 }
 

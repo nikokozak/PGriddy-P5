@@ -1,5 +1,6 @@
 import { draw } from './drawers';
 import GridPoint from './grid_point';
+import Point from './point';
 import PointGrid from './point_grid';
 /*
   A SELECTION is a data structure
@@ -11,6 +12,19 @@ import PointGrid from './point_grid';
   startRow, endRow -> bottom-right corner of selection rectangle
  */
 
+export default class Selection {
+
+  draw: Function;
+  points: Array<GridPoint | Point>;
+
+  constructor(points: Array<GridPoint | Point>) {
+    this.points = points;
+    this.draw = draw(this.points);
+  }
+
+}
+
+/*
 export default class Selection {
 
   colStart: number;
@@ -49,4 +63,4 @@ export default class Selection {
 
   }
 
-}
+}*/

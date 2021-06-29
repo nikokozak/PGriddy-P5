@@ -29004,7 +29004,136 @@ var forEachPoint = function forEachPoint(points, fun) {
 };
 
 exports.forEachPoint = forEachPoint;
-},{}],"pgriddy/noise.ts":[function(require,module,exports) {
+},{}],"pgriddy/drawers.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.drawPoints = exports.draw = void 0;
+
+var _utilities = require("./utilities");
+
+// VARIOUS DRAWING FUNCTIONS FOR OUR CLASSES
+var draw = function draw(points) {
+  return function (pInstance, type, displayWeight) {
+    if (type === void 0) {
+      type = 1;
+    }
+
+    if (displayWeight === void 0) {
+      displayWeight = true;
+    }
+
+    drawPoints(points, pInstance, type, displayWeight);
+  };
+};
+
+exports.draw = draw;
+
+var drawPoints = function drawPoints(points, pInstance, type, displayWeight) {
+  for (var i = 0; i < points.length; i++) {
+    if (displayWeight) {
+      var col = (0, _utilities.weightToRGB)(points[i].weight);
+      pInstance.stroke(col);
+      pInstance.fill(col);
+    } else {
+      pInstance.stroke(255);
+      pInstance.fill(255);
+    }
+
+    switch (type) {
+      case 1:
+        pInstance.point(points[i].x, points[i].y);
+        break;
+
+      case 2:
+        pInstance.circle(points[i].x, points[i].y, 3);
+        break;
+
+      case 3:
+        pInstance.rectMode(pInstance.CENTER);
+        pInstance.rect(points[i].x, points[i].y, 5, 5);
+        break;
+    }
+  }
+};
+
+exports.drawPoints = drawPoints;
+},{"./utilities":"pgriddy/utilities.ts"}],"pgriddy/selection.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _drawers = require("./drawers");
+
+/*
+  A SELECTION is a data structure
+
+  a SELECTION represents a portion of a POINT_GRID that can be passed into
+  certain functions to limit their effect to specific areas.
+
+  startCol, startRow -> top-left corner of selection rectangle
+  startRow, endRow -> bottom-right corner of selection rectangle
+ */
+var Selection =
+/** @class */
+function () {
+  function Selection(points) {
+    this.points = points;
+    this.draw = (0, _drawers.draw)(this.points);
+  }
+
+  return Selection;
+}();
+
+var _default = Selection;
+/*
+export default class Selection {
+
+  colStart: number;
+  rowStart: number;
+  colEnd: number;
+  rowEnd: number;
+
+  draw: Function;
+  points: Array<GridPoint>;
+
+  constructor (colStart: number,
+               rowStart: number,
+               colEnd: number,
+               rowEnd: number,
+               pointGrid: PointGrid)
+  {
+
+    if ( pointGrid.checkBounds(colStart, rowStart, colEnd, rowEnd)
+      && colStart <= colEnd
+      && rowStart <= rowEnd )
+
+    {
+
+      this.colStart = colStart;
+      this.rowStart = rowStart;
+      this.colEnd = colEnd;
+      this.rowEnd = rowEnd;
+
+    } else {
+
+      throw("Selection exceeds PointGrid bounds, or col/row inputs are wrong.");
+
+    }
+
+    this.draw = draw(this.points);
+
+  }
+
+}*/
+
+exports.default = _default;
+},{"./drawers":"pgriddy/drawers.ts"}],"pgriddy/noise.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -29397,7 +29526,11 @@ exports.getThreshold = exports.getSimplex = exports.getPerlin = exports.getRando
 
 var _utilities = require("./utilities");
 
+var _selection = _interopRequireDefault(require("./selection"));
+
 var _noise = require("./noise");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // VARIOUS GETTER FUNCTIONS FOR CLASSES
 
@@ -29408,8 +29541,10 @@ var _noise = require("./noise");
 /************************************************/
 var getPGPoint = function getPGPoint(pointGrid) {
   return function (column, row) {
-    column = Math.min(column, pointGrid.numX);
-    row = Math.min(row, pointGrid.numY);
+    // column = Math.min(column, pointGrid.numX);
+    // row = Math.min(row, pointGrid.numY);
+    column = column % pointGrid.numX;
+    row = row % pointGrid.numY;
     return (0, _utilities.arraySelector)(column, row, pointGrid.numX, pointGrid.points);
   };
 };
@@ -29609,7 +29744,8 @@ var getPGPattern = function getPGPattern(pointGrid) {
     var mod = directionList.length;
 
     while (step < repetitions) {
-      if (tempResult.has(currentPoint) || currentPoint == null) break;
+      // if (tempResult.has(currentPoint) || currentPoint == null) break;
+      if (currentPoint == null) break;
       tempResult.add(Object.assign({}, currentPoint)); //new Grid_Point(currentPoint));
 
       pointer = step % mod; //print(directionList.get(pointer));
@@ -29651,7 +29787,7 @@ var getPGPattern = function getPGPattern(pointGrid) {
       step += 1;
     }
 
-    return Array.from(tempResult);
+    return new _selection.default(Array.from(tempResult));
   };
 };
 
@@ -29731,7 +29867,7 @@ var getThreshold = function getThreshold(points) {
 };
 
 exports.getThreshold = getThreshold;
-},{"./utilities":"pgriddy/utilities.ts","./noise":"pgriddy/noise.ts"}],"pgriddy/applicators.ts":[function(require,module,exports) {
+},{"./utilities":"pgriddy/utilities.ts","./selection":"pgriddy/selection.ts","./noise":"pgriddy/noise.ts"}],"pgriddy/applicators.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -30112,63 +30248,7 @@ var makeRadialApplicator = function makeRadialApplicator(weightFn) {
     };
   };
 };
-},{"./utilities":"pgriddy/utilities.ts","./noise":"pgriddy/noise.ts"}],"pgriddy/drawers.ts":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.drawPoints = exports.draw = void 0;
-
-var _utilities = require("./utilities");
-
-// VARIOUS DRAWING FUNCTIONS FOR OUR CLASSES
-var draw = function draw(points) {
-  return function (pInstance, type, displayWeight) {
-    if (type === void 0) {
-      type = 1;
-    }
-
-    if (displayWeight === void 0) {
-      displayWeight = true;
-    }
-
-    drawPoints(points, pInstance, type, displayWeight);
-  };
-};
-
-exports.draw = draw;
-
-var drawPoints = function drawPoints(points, pInstance, type, displayWeight) {
-  for (var i = 0; i < points.length; i++) {
-    if (displayWeight) {
-      var col = (0, _utilities.weightToRGB)(points[i].weight);
-      pInstance.stroke(col);
-      pInstance.fill(col);
-    } else {
-      pInstance.stroke(255);
-      pInstance.fill(255);
-    }
-
-    switch (type) {
-      case 1:
-        pInstance.point(points[i].x, points[i].y);
-        break;
-
-      case 2:
-        pInstance.circle(points[i].x, points[i].y, 3);
-        break;
-
-      case 3:
-        pInstance.rectMode(pInstance.CENTER);
-        pInstance.rect(points[i].x, points[i].y, 5, 5);
-        break;
-    }
-  }
-};
-
-exports.drawPoints = drawPoints;
-},{"./utilities":"pgriddy/utilities.ts"}],"pgriddy/point_grid.ts":[function(require,module,exports) {
+},{"./utilities":"pgriddy/utilities.ts","./noise":"pgriddy/noise.ts"}],"pgriddy/point_grid.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -30333,6 +30413,8 @@ var size = {
 var sketch = function sketch(p) {
   var gridCenter = new _point.default(size.width / 2, size.height / 2);
   var grid = new _point_grid.default(20, 20, gridCenter, 10, 10);
+  var pattern;
+  var counter = 0;
 
   p.setup = function () {
     p.createCanvas(size.width, size.height);
@@ -30341,8 +30423,10 @@ var sketch = function sketch(p) {
   p.draw = function () {
     p.background(0);
     p.fill(255);
-    p.circle(10, 10, 10);
-    grid.draw(p, 2);
+    p.circle(10, 10, 10); //grid.draw(p, 2);
+
+    pattern = grid.getPattern(0, 0, [2, 3, 4, 1], p.frameCount, true);
+    pattern.draw(p, 2);
   };
 };
 
@@ -30376,7 +30460,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "64417" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60924" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
